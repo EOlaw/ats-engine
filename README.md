@@ -1,866 +1,920 @@
 # ATS Engine
-# ATS Engine
 
-## Table of contents
+> An enterprise-grade ATS resume intelligence platform for parsing resumes, extracting structured candidate data, scoring ATS readiness, tailoring content to job descriptions, and exporting recruiter-friendly resume artifacts.
 
-1. Purpose
-2. Executive summary
-3. System goals and non-goals
-4. High-level architecture
-5. Detailed component reference
-    - Frontend
-    - Backend API
-    - Parsing service
-    - AI / prompts
-    - Scoring
-    - Optimization / Tailoring
-    - Exporters
-    - Storage & database
-    - Authentication & user management
-6. Data Flow Diagram (DFD)
-7. Sequence flows and examples
-8. API reference (endpoints, payloads, examples)
-9. Database schema overview
-10. Prompts and prompt engineering guide
-11. Development environment & quickstart
-12. Testing and CI
-13. Deployment and infrastructure guidance
-14. Security, privacy, and compliance considerations
-15. Operational runbook
-16. Troubleshooting
-17. Extending the system
-18. Contributing guidelines
-19. FAQs
-20. Glossary
-21. Changelog
-22. License
+<p align="center">
+  <img alt="Next.js" src="https://img.shields.io/badge/frontend-Next.js%20%2B%20TypeScript-111827?style=for-the-badge" />
+  <img alt="FastAPI" src="https://img.shields.io/badge/backend-FastAPI%20%2B%20Python-0F766E?style=for-the-badge" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/database-PostgreSQL-1D4ED8?style=for-the-badge" />
+  <img alt="LLM" src="https://img.shields.io/badge/AI-LLM%20Extraction%20%26%20Optimization-7C3AED?style=for-the-badge" />
+</p>
+
+---
+
+## Table of Contents
+
+- [1. Purpose](#1-purpose)
+- [2. Executive Summary](#2-executive-summary)
+- [3. System Goals and Non-Goals](#3-system-goals-and-non-goals)
+- [4. Product Capabilities](#4-product-capabilities)
+- [5. High-Level Architecture](#5-high-level-architecture)
+- [6. Detailed Component Reference](#6-detailed-component-reference)
+  - [6.1 Frontend](#61-frontend-nextjs)
+  - [6.2 Backend API](#62-backend-api-fastapi)
+  - [6.3 Parsing Service](#63-parsing-service)
+  - [6.4 AI / Prompt Engine](#64-ai--prompt-engine)
+  - [6.5 Scoring Service](#65-scoring-service)
+  - [6.6 Optimization / Tailoring Service](#66-optimization--tailoring-service)
+  - [6.7 Exporters](#67-exporters)
+  - [6.8 Storage & Database](#68-storage--database)
+  - [6.9 Authentication & User Management](#69-authentication--user-management)
+- [7. Data Flow Diagram (DFD)](#7-data-flow-diagram-dfd)
+- [8. Sequence Flows and Examples](#8-sequence-flows-and-examples)
+- [9. API Reference](#9-api-reference)
+- [10. Database Schema Overview](#10-database-schema-overview)
+- [11. Prompts and Prompt Engineering Guide](#11-prompts-and-prompt-engineering-guide)
+- [12. Development Environment & Quickstart](#12-development-environment--quickstart)
+- [13. Testing and CI](#13-testing-and-ci)
+- [14. Deployment and Infrastructure Guidance](#14-deployment-and-infrastructure-guidance)
+- [15. Security, Privacy, and Compliance](#15-security-privacy-and-compliance)
+- [16. Operational Runbook](#16-operational-runbook)
+- [17. Troubleshooting](#17-troubleshooting)
+- [18. Extending the System](#18-extending-the-system)
+- [19. Contributing Guidelines](#19-contributing-guidelines)
+- [20. FAQs](#20-faqs)
+- [21. Glossary](#21-glossary)
+- [22. Changelog](#22-changelog)
+- [23. License](#23-license)
 
 ---
 
 ## 1. Purpose
 
-This repository implements the ATS Engine: an integrated system for parsing resumes, extracting structured data, scoring resumes against Applicant Tracking Systems (ATS) heuristics, and producing tailored resume variants and export artifacts. The system is intended for recruiters, career platforms, and resume-improvement services who need a repeatable, auditable pipeline to transform raw resume files into structured, analyzable data and human-readable artifacts.
+The **ATS Engine** is an integrated resume intelligence system designed to:
 
-Key motivations:
+- ingest resumes in PDF, DOCX, and TXT formats
+- extract and normalize candidate information into structured data
+- evaluate resumes against ATS-friendly heuristics
+- generate optimization suggestions and tailored resume variants
+- export recruiter-ready artifacts in multiple formats
 
-- Reduce manual resume parsing labor by automating extraction and normalization.
-- Provide an objective, repeatable ATS score and remediation suggestions.
-- Enable tailored resume generation for specific job descriptions.
-- Offer export formats suitable for applicant submissions and archival.
+This project is built for:
 
-Intended users:
+- career platforms
+- resume optimization tools
+- recruiting software vendors
+- internal HR tooling teams
+- product teams building AI-assisted job application experiences
 
-- Product teams building resume tooling.
-- Recruiters and hiring platforms.
-- Developers integrating resume features into HR systems.
+### In Scope
 
-Out of scope (non-goals):
+- resume upload and storage
+- text extraction and parsing
+- structured resume JSON generation
+- ATS scoring and explainable feedback
+- job-specific tailoring
+- template-based resume export
+- user dashboards and processing history
 
-- Serving as a full applicant tracking system (we focus on resume processing and scoring).
-- Building a complete job matching recommendation engine (can be integrated later).
+### Out of Scope
 
----
-
-## 2. Executive summary
-
-The ATS Engine combines three core capabilities:
-
-1. File ingestion and parsing: robust extraction of text and structure from PDF, DOCX, and plain-text resumes.
-2. AI-assisted extraction and transformation: prompts and LLM workflows convert raw text into structured records (work experience, education, skills, achievements).
-3. Scoring and optimization: a scoring engine provides ATS-sensitivity metrics and guided optimizations; an optimizer can produce tailored resume variants.
-
-The architecture decouples concerns: the frontend handles user interaction, the backend orchestrates processing, and specialized services perform parsing, scoring, and exporting. This separation allows scaling of computationally intensive tasks and substitution of AI providers.
-
----
-
-## 3. System goals and non-goals (expanded)
-
-Goals (detailed):
-
-- Accuracy: Achieve high recall for section detection (experience, education, skills) across varied resume templates.
-- Explainability: Produce explainable scoring components so users can see why specific suggestions were made.
-- Extensibility: Make it straightforward to add new exporters, scoring rules, or prompt variants.
-- Privacy-preserving: Minimize retention of sensitive content and provide clear purge policies.
-- Practical performance: Support typical resume parsing and scoring in under a few seconds per file (depending on provider and compute).
-
-Non-goals (detailed):
-
-- Real-time collaborative editing of resumes inside the tool.
-- Full HR lifecycle management (interviews, offers, onboarding).
+- a full applicant tracking system for hiring workflows
+- interview scheduling and candidate pipeline management
+- job board aggregation and recommendation engines
+- offer letter, onboarding, or payroll workflows
 
 ---
 
-## 4. High-level architecture
+## 2. Executive Summary
 
-Components and relationships (summary):
+ATS Engine combines **document processing**, **AI-driven extraction**, and **resume optimization** into one auditable pipeline.
 
-- Frontend (Next.js): upload, preview, history, user settings, and visualization of scores.
-- Backend API (FastAPI): request handling, job orchestration, storage management, authentication.
-- Parsing Service: file transformation (PDF/DOCX -> plain text), heuristic extraction, initial normalization.
-- AI / LLM Service: prompt-based extraction, refinement, and content generation.
-- Scoring Service: rule-based + ML heuristics to compute ATS compatibility scores.
-- Optimization Service: generates recommended edits and tailored resume variants.
-- Exporters: produce PDF/DOCX/JSON and other deliverables.
-- Database (Postgres / Prisma and Alembic migrations): stores users, resumes, reports, and job-target mappings.
-- File Storage (local, S3, or equivalent): stores uploaded files, intermediate artifacts, and exports.
+At a high level, the system works like this:
 
-Diagram (visualization is below in section 6). The system is designed so that the backend orchestrates long-running tasks using a queuing system (optional) and worker processes.
+1. A user uploads a resume.
+2. The system parses the file and extracts raw text and section candidates.
+3. An AI layer converts that content into validated, structured resume data.
+4. A scoring engine evaluates ATS readiness.
+5. An optimization layer improves clarity, alignment, and recruiter readability.
+6. An exporter generates polished, ATS-safe output formats.
+
+The design intentionally separates the frontend, orchestration layer, parsing logic, AI services, scoring logic, and exporters so each part can scale independently and be replaced without rewriting the entire product.
 
 ---
 
-## 5. Detailed component reference
+## 3. System Goals and Non-Goals
 
-This section describes each major component, responsibilities, key files, and extension points. Use this as a developer reference when making changes or adding features.
+### Goals
 
-### 5.1 Frontend (Next.js)
+- **Accuracy:** Extract candidate data reliably from diverse resume formats.
+- **Explainability:** Show users why a resume scored the way it did.
+- **Extensibility:** Add new prompts, exporters, and scoring rules with minimal refactoring.
+- **Security:** Protect user documents and sensitive personal information.
+- **Performance:** Process standard resumes within a few seconds in common cases.
+- **Auditability:** Maintain clear processing states, versioned outputs, and traceable transformations.
 
-Location: `src/`
+### Non-Goals
 
-Responsibilities:
+- collaborative document editing like Google Docs
+- full recruitment lifecycle management
+- automatic fabrication of missing candidate details
+- replacing recruiter judgment with a black-box score
 
-- User authentication flows (login, register, password reset).
-- Resume upload UI with drag-and-drop and file validation.
-- Job-target input for tailoring (paste job description or select job profile).
-- Display of parsing results, section extraction, and ATS score breakdown.
-- Editor for suggested edits and side-by-side comparison of original vs tailored versions.
-- Download links for exports.
+---
 
-Key components (examples):
+## 4. Product Capabilities
 
-- Upload zone: `src/components/resume/upload-zone.tsx` — handles file selection, drag-and-drop, and upload progress.
-- ATS Score card: `src/components/resume/ats-score-card.tsx` — visual score and breakdown.
-- Preview/editor: `src/resume/editor/` — editing UI for results.
+### Core Features
 
-Extension points:
+- Resume upload with validation
+- PDF/DOCX/TXT parsing
+- Structured extraction into machine-readable JSON
+- ATS score breakdown and remediation feedback
+- Job-description tailoring
+- Template-based ATS-safe rendering
+- Downloadable PDF, DOCX, and JSON outputs
+- Resume version history and artifact tracking
 
-- Add new views for additional export types.
-- Plug in analytics or product telemetry for feature usage.
+### Enterprise Features
 
-Frontend environment variables:
+- role-based access control
+- queue-based background processing
+- provider-agnostic AI adapter layer
+- storage abstraction for local and cloud object storage
+- export versioning and audit logging
+- observability hooks for logs, metrics, and tracing
 
-- `NEXT_PUBLIC_API_BASE_URL` — base URL for the backend API.
-- `NEXT_PUBLIC_SENTRY_DSN` — optional error tracking.
+---
 
-Local dev commands (see Quickstart for full flow):
+## 5. High-Level Architecture
 
-```bash
-npm install
-npm run dev
+```text
+User
+  ↓
+Frontend (Next.js)
+  ↓
+Backend API (FastAPI)
+  ├── Parsing Service
+  ├── AI / Prompt Engine
+  ├── Scoring Service
+  ├── Optimization Service
+  ├── Exporters
+  ├── Database
+  └── File Storage
 ```
 
-### 5.2 Backend API (resume_engine/app)
+### Architectural Principles
 
-Location: `resume_engine/app/`
-
-Responsibilities:
-
-- Expose REST endpoints for resume ingestion, retrieval, scoring, and exporting.
-- Coordinate parsing, AI calls, scoring, and exporting workflows.
-- Manage user accounts, permissions, and records in the database.
-
-Key modules:
-
-- `app/api/` — endpoint definitions and exception handlers.
-- `app/services/` — high-level orchestration services (resume_service, user_service, export_service).
-- `app/models/` — ORM or schema models.
-- `app/schemas/` — Pydantic request/response schemas.
-- `app/db/` — database session and migration helpers.
-
-Important considerations:
-
-- Keep API handlers thin; delegate heavy work to services and background workers.
-- Implement idempotency for resume ingestion endpoints to avoid duplicate processing.
-
-Authentication:
-
-- JWT-based sessions with refresh tokens are typical; `app/core/security.py` contains helpers.
-
-Start the API locally:
-
-```bash
-uvicorn resume_engine.main:app --reload
-```
-
-### 5.3 Parsing Service
-
-Location: `resume_engine/app/services/parsers` (or similar)
-
-Responsibilities:
-
-- Convert input files (PDF, DOCX, TXT) to a canonical plain-text representation.
-- Detect sections (experience, education, skills) using heuristics and rules.
-- Normalize dates, extract bullet lists, and detect inline formatting cues (bold for headings).
-
-Approach details:
-
-- Use robust PDF extraction libraries (pdfminer, pdfplumber, or external OCR for scanned PDFs).
-- Use python-docx for DOCX parsing.
-- Implement fallback heuristics for ambiguous formatting.
-
-Outputs:
-
-- Raw text file stored in storage.
-- Parsed JSON with candidate sections and offsets for downstream LLM extraction.
-
-### 5.4 AI / Prompts
-
-Location: `prompts/` and `resume_engine/app/services/ai`
-
-Responsibilities:
-
-- Use prompt templates to guide LLMs to extract structured fields from raw text.
-- Provide optimization guidance: suggest rewritten bullet points, quantify achievements, and add keywords.
-- Validate outputs and map them back to internal schemas.
-
-Prompt engineering best practices:
-
-- Use system-level context to define the desired output format (JSON schema, strict keys).
-- Provide few-shot examples for tricky extraction cases (dates in multiple formats, multi-job entries).
-- Validate LLM output: schema-check (Pydantic) and fallback to heuristics if extraction confidence is low.
-
-LLM integration patterns:
-
-- Synchronous call: for small files and quick extraction.
-- Async/queued: for heavy or batched processing.
-
-Configuration:
-
-- Support multiple providers (OpenAI, Anthropic, local LLMs) via an adapter layer.
-
-### 5.5 Scoring Service
-
-Location: `resume_engine/app/services/scoring` (or similar)
-
-Responsibilities:
-
-- Compute an ATS compatibility score using a set of rules and heuristics.
-- Break down the score by categories: keywords, sections present, formatting, contact info, chronology, and readability.
-- Provide actionable feedback that can be presented to users.
-
-Scoring approach (example):
-
-- Keywords: match against job description keywords using fuzzy matching and synonyms.
-- Sections: reward presence of Experience, Education, Skills, Contact Info.
-- Formatting: reward machine-readable sections and penalize unusual fonts or images-only content.
-- Chronology: detect gaps and inconsistent date ranges.
-
-Scoring outputs:
-
-- Numeric score (0-100).
-- Category breakdown with weights and recommendations.
-
-### 5.6 Optimization / Tailoring Service
-
-Location: `resume_engine/app/services/optimization` or `prompts/tailoring`
-
-Responsibilities:
-
-- Generate tailored resume variants for a target job description.
-- Rephrase bullets, emphasize matching keywords, and reorder sections when beneficial.
-
-Approach:
-
-- Use the extracted structured data as the authoritative source for transformations.
-- Preserve factual content; avoid inventing unsupported facts.
-- Generate multiple candidate variants and score them automatically.
-
-Human-in-the-loop:
-
-- Present suggestions and let users accept/reject edits in the frontend editor.
-
-### 5.7 Exporters
-
-Location: `resume_engine/app/services/exporters` or `exporters/`
-
-Responsibilities:
-
-- Render structured or tailored resume content into deliverables: PDF, DOCX, and JSON.
-- Ensure consistent styling for templates and preserve applicant data.
-
-Implementation notes:
-
-- Use templating engines (WeasyPrint, ReportLab, or native DOCX templates) to produce high-quality PDFs.
-- Ensure exports are sanitized and do not leak internal metadata unless requested.
-
-### 5.8 Storage & Database
-
-Storage:
-
-- Use object storage (S3-compatible) for file durability and scalable storage.
-- Keep uploads in a private bucket, generate presigned URLs for downloads.
-
-Database:
-
-- Use Postgres with Prisma (or SQLAlchemy) for schema migrations and data access.
-- Store normalized resume records, user profiles, job profiles, and report metadata.
-
-Schema considerations:
-
-- Resume records should reference stored files and structured JSON versions.
-- Reports should be versioned to track changes and tailored variants.
-
-### 5.9 Authentication & User Management
-
-Responsibilities:
-
-- Secure access to resume data via authentication and role-based access control.
-- Allow users to manage their data and authorship of tailored variants.
-
-Implementation:
-
-- JWT for API access with refresh tokens.
-- Optional OAuth integration for enterprise use (Google, Microsoft).
+- **Thin API, strong services:** API routes orchestrate; services do the heavy lifting.
+- **Structured data first:** Resume content becomes normalized JSON before optimization or export.
+- **Async where it matters:** Expensive jobs should run through worker queues.
+- **Provider abstraction:** AI and storage layers should be replaceable.
+- **Human review friendly:** Suggestions should be inspectable, editable, and explainable.
 
 ---
 
-## 6. Data Flow Diagram (DFD)
+## 6. Detailed Component Reference
 
-This section contains multiple visualizations and text descriptions to help architects and devs understand the flows.
+## 6.1 Frontend (Next.js)
 
-High-level DFD (mermaid):
+**Location:** `src/`
+
+### Responsibilities
+
+- authentication and session flows
+- resume upload experience
+- job description input or selection
+- parsing preview and field editor
+- ATS score visualization
+- resume diff viewer for tailored variants
+- export downloads and artifact history
+
+### Suggested Feature Areas
+
+- `src/app/(dashboard)/resumes`
+- `src/components/resume/upload-zone.tsx`
+- `src/components/resume/ats-score-card.tsx`
+- `src/components/resume/template-gallery.tsx`
+- `src/components/resume/diff-viewer.tsx`
+- `src/components/resume/export-actions.tsx`
+
+### Frontend Notes
+
+- Use drag-and-drop uploads with file type and size validation.
+- Show processing states clearly: `uploaded`, `queued`, `parsing`, `extracting`, `scoring`, `ready`, `failed`.
+- Prefer optimistic but honest UX: show progress, not fake completion.
+- Keep template previews visually polished while the final export remains ATS-safe.
+
+---
+
+## 6.2 Backend API (FastAPI)
+
+**Location:** `resume_engine/app/`
+
+### Responsibilities
+
+- receive uploads and validate metadata
+- create processing jobs and persist state
+- orchestrate parsing, AI extraction, scoring, tailoring, and export generation
+- expose read/write endpoints for resumes, reports, and exports
+- manage authentication and access control
+
+### Suggested Modules
+
+- `app/api/` — endpoints, exception handlers, dependencies
+- `app/services/` — orchestration services
+- `app/models/` — ORM models
+- `app/schemas/` — Pydantic schemas
+- `app/core/` — security, config, logging
+- `app/db/` — sessions, migrations, repositories
+
+### Backend Principles
+
+- keep route handlers thin
+- make ingestion idempotent when possible
+- validate all AI outputs against schemas
+- support retries for transient provider failures
+- never expose raw storage keys directly to the client
+
+---
+
+## 6.3 Parsing Service
+
+### Responsibilities
+
+- convert PDF, DOCX, and TXT files into canonical plain text
+- detect likely resume sections
+- extract headings, bullet groups, and date ranges
+- handle formatting ambiguity with heuristics and fallbacks
+
+### Recommended Approach
+
+- `pdfplumber` or equivalent for PDF extraction
+- `python-docx` for DOCX parsing
+- OCR fallback for scanned or image-based PDFs
+- heuristics for:
+  - section detection
+  - heading normalization
+  - date standardization
+  - bullet segmentation
+
+### Outputs
+
+- canonical extracted text
+- intermediate parse metadata
+- candidate structured draft payload for downstream AI validation
+
+---
+
+## 6.4 AI / Prompt Engine
+
+### Responsibilities
+
+- transform raw resume text into structured JSON
+- improve bullet points without inventing facts
+- classify and validate unclear content
+- tailor resume content to target jobs
+- support multiple model providers through adapters
+
+### Best Practices
+
+- enforce strict output schemas
+- separate extraction from optimization
+- use confidence flags for ambiguous fields
+- version prompt templates
+- never let rewritten content overwrite source truth silently
+
+### Prompt Pipeline
+
+1. Extraction prompt
+2. Validation prompt
+3. ATS analysis prompt
+4. Optimization prompt
+5. Template rendering prompt
+
+---
+
+## 6.5 Scoring Service
+
+### Responsibilities
+
+- compute an ATS readiness score
+- break down score categories
+- produce explainable recommendations
+
+### Example Scoring Categories
+
+- contact completeness
+- section coverage
+- chronology consistency
+- keyword alignment
+- formatting safety
+- bullet clarity and impact
+- recruiter readability
+
+### Output
+
+```json
+{
+  "score": 82,
+  "categories": {
+    "contact": 10,
+    "sections": 18,
+    "keywords": 20,
+    "formatting": 14,
+    "clarity": 12,
+    "impact": 8
+  },
+  "critical_fixes": ["Add a stronger summary", "Clarify one employment date range"],
+  "notes": ["Resume is ATS-safe but could use more role-specific keywords"]
+}
+```
+
+---
+
+## 6.6 Optimization / Tailoring Service
+
+### Responsibilities
+
+- tailor the resume to a job description
+- rewrite weak bullets using supported facts
+- reorder content to improve relevance
+- generate multiple candidate variants when needed
+
+### Rules
+
+- preserve truthfulness
+- never fabricate skills, achievements, or credentials
+- optimize for both ATS parsing and recruiter readability
+- present suggestions in a reviewable form
+
+### Typical Flow
+
+- compare extracted resume data to target job text
+- identify keyword gaps and relevance gaps
+- produce a tailored summary and refined bullets
+- re-score the tailored version
+
+---
+
+## 6.7 Exporters
+
+### Responsibilities
+
+- render structured data into ATS-safe templates
+- support PDF, DOCX, and JSON output
+- preserve consistent layout and metadata hygiene
+
+### Suggested Export Types
+
+- `pdf`
+- `docx`
+- `json`
+- optional `html` preview for internal rendering
+
+### ATS-Safe Rendering Rules
+
+- single-column layout by default
+- minimal decorative elements
+- no icons or text boxes in submission exports
+- consistent section headings
+- stable spacing and readable typography
+
+---
+
+## 6.8 Storage & Database
+
+### Storage
+
+Use object storage for:
+
+- raw uploads
+- extracted text artifacts
+- optimized variants
+- exported files
+
+Examples:
+
+- local filesystem for development
+- S3 / MinIO / compatible object storage in production
+
+### Database
+
+Recommended: **PostgreSQL**
+
+Store:
+
+- users
+- resumes
+- parsed JSON records
+- ATS reports
+- tailored variants
+- export artifacts
+- audit events
+
+---
+
+## 6.9 Authentication & User Management
+
+### Responsibilities
+
+- secure access to private resume data
+- support user-level isolation
+- enable organization and admin roles where needed
+
+### Recommended Features
+
+- JWT or session-based auth
+- refresh tokens
+- optional OAuth with Google/Microsoft
+- role-based authorization
+- secure account recovery flows
+
+---
+
+## 7. Data Flow Diagram (DFD)
 
 ```mermaid
 flowchart LR
    U[User]
-   FE[Frontend (Next.js)]
-   API[Backend API (resume_engine/app)]
+   FE[Frontend\nNext.js]
+   API[Backend API\nFastAPI]
    Parser[Parsing Service]
-   AI[AI / LLM Service]
+   AI[AI / Prompt Engine]
    Score[Scoring Service]
    Opt[Optimization Service]
    Export[Exporters]
    DB[(Database)]
    Storage[(File Storage / S3)]
 
-   U -->|upload resume| FE
-   FE -->|POST /resumes| API
-   API -->|save raw file| Storage
-   API -->|create record| DB
-   API -->|queue parse job| Parser
-   Parser -->|extract text| Storage
-   Parser -->|structured payload| API
-   API -->|call prompts| AI
-   AI -->|extracted entities| API
-   API -->|compute score| Score
-   Score -->|score result| API
-   API -->|request tailoring| Opt
-   Opt -->|tailored resume| API
-   API -->|generate artifacts| Export
-   Export -->|artifact files| Storage
-   API -->|return results| FE
-   FE -->|display downloads & report| U
-
-   DB -->|store metadata & reports| API
-
-   classDef service fill:#f9f,stroke:#333,stroke-width:1px;
-   class Parser,AI,Score,Opt,Export service;
+   U -->|Upload resume| FE
+   FE -->|POST /api/resumes| API
+   API -->|Store raw file| Storage
+   API -->|Create record| DB
+   API -->|Queue parse job| Parser
+   Parser -->|Extract text| Storage
+   Parser -->|Structured draft| API
+   API -->|LLM extraction| AI
+   AI -->|Validated entities| API
+   API -->|Compute ATS score| Score
+   Score -->|Score report| API
+   API -->|Request tailoring| Opt
+   Opt -->|Tailored variants| API
+   API -->|Generate artifacts| Export
+   Export -->|PDF / DOCX / JSON| Storage
+   API -->|Return results| FE
+   FE -->|Display insights| U
 ```
 
-DFD explanation (detailed):
+### DFD Notes
 
-- User uploads a resume through the frontend; the frontend streams the file to the backend API.
-- The backend persists the raw file in Storage and inserts a resume record in the Database with status `uploaded`.
-- The backend enqueues a parse job for the Parsing Service. A worker picks up the job and converts the file to canonical text and a candidate JSON structure.
-- The parsing output is written back to Storage and a draft structured payload is returned to the API.
-- The API invokes the AI Service to refine extraction using prompt templates. The LLM returns a validated JSON following the schema.
-- The Scoring Service computes the ATS compatibility score and stores the report in the Database.
-- If tailoring is requested, the Optimization Service generates tailored variants and scores them; the best variants are stored and exported.
-- The Exporters produce final artifacts and write them to Storage; their download links are returned to the frontend.
-
-Security boundaries:
-
-- The LLM provider endpoint is external; credentials must be kept secret and rate-limited.
-- Storage access should be limited to the backend and worker processes.
+- The backend is the orchestrator.
+- The AI layer refines but does not become the source of truth without schema validation.
+- Long-running operations should be delegated to workers.
+- Storage and database access should remain private to trusted services.
 
 ---
 
-## 7. Sequence flows and examples
+## 8. Sequence Flows and Examples
 
-This section provides example sequences for common actions: "Upload and score a resume", "Tailor resume for a job", and "Regenerate exports".
+### 8.1 Upload and Score a Resume
 
-### 7.1 Upload and score
+1. User uploads a file from the frontend.
+2. Backend stores the file and creates a processing record.
+3. Parser extracts text and section candidates.
+4. AI converts the parsed content to structured JSON.
+5. Scoring service computes ATS score and explanations.
+6. Frontend fetches and displays the report.
 
-1. Frontend POSTs file to `POST /api/resumes` with minimal metadata.
-2. Backend responds with `202 Accepted` and a resume `id`.
-3. Backend writes raw file to Storage and creates DB record with status `queued`.
-4. Worker picks up parse job, writes canonical text to Storage, and creates a draft JSON.
-5. Backend calls AI Service with the draft JSON and prompt instructions.
-6. AI returns structured entities; backend validates and writes final structured JSON to the DB.
-7. Scoring service computes a score and stores the report.
-8. Backend notifies frontend (via websocket or polling); frontend fetches report and displays it.
+### 8.2 Tailor a Resume for a Job
 
-Payload examples (abbreviated):
+1. User pastes or selects a job description.
+2. Backend starts a tailoring job.
+3. Optimization layer aligns content to target role requirements.
+4. Tailored version is re-scored.
+5. Frontend displays differences and exports.
 
-Request: `POST /api/resumes`
+### 8.3 Regenerate an Export
+
+1. User selects a template.
+2. Exporter renders the latest approved structured content.
+3. Artifact is stored and linked back to the resume record.
+
+---
+
+## 9. API Reference
+
+### `POST /api/resumes`
+Upload a new resume.
+
+**Request:** `multipart/form-data`
+
+- `file`: resume file
+- `metadata`: optional JSON metadata
+
+**Response:** `202 Accepted`
 
 ```json
 {
-   "filename": "jane_doe_resume.pdf",
-   "user_id": "user_123",
-   "target_job_id": null
+  "resume_id": "resume_456",
+  "status": "queued"
 }
 ```
 
-Response: `202 Accepted`
+### `GET /api/resumes/{id}`
+Retrieve resume metadata, processing status, structured data, and ATS results.
+
+### `POST /api/resumes/{id}/tailor`
+Create a tailored resume variant for a target role.
+
+**Request Example**
 
 ```json
 {
-   "resume_id": "resume_456",
-   "status": "queued"
+  "job_text": "We are hiring a Data Analyst with SQL, Python, Tableau, and stakeholder communication skills..."
 }
 ```
 
-### 7.2 Tailor for a job
+### `GET /api/resumes/{id}/exports`
+List generated artifacts and download URLs.
 
-1. User provides a job description or selects a saved job target.
-2. Frontend calls `POST /api/resumes/{id}/tailor` with `job_text` or `job_id`.
-3. Backend creates an optimization job and sets status `tailoring`.
-4. Optimizer uses extracted structured data and job keywords, runs LLM prompts to rephrase and emphasize matching skills.
-5. Tailored variant is scored and stored.
-6. Frontend displays diff and download options.
+### Common Error Codes
+
+- `401 Unauthorized`
+- `403 Forbidden`
+- `404 Not Found`
+- `409 Conflict`
+- `422 Unprocessable Entity`
+- `429 Too Many Requests`
 
 ---
 
-## 8. API reference (selected endpoints)
+## 10. Database Schema Overview
 
-This section documents primary endpoints. For a complete OpenAPI spec, see `resume_engine/openapi.json` or generate one from the codebase.
+### Core Tables
 
-### POST /api/resumes
+#### `users`
+- `id`
+- `email`
+- `hashed_password`
+- `created_at`
+- `last_login_at`
 
-- Description: Upload a new resume.
-- Request: multipart/form-data with `file` and optional JSON `metadata`.
-- Response: `202 Accepted` with `resume_id`.
+#### `resumes`
+- `id`
+- `user_id`
+- `original_filename`
+- `storage_key`
+- `status`
+- `created_at`
 
-Example curl:
+#### `structured_resumes`
+- `id`
+- `resume_id`
+- `json_payload`
+- `parsed_at`
 
-```bash
-curl -X POST "${API_BASE}/api/resumes" \
-   -H "Authorization: Bearer ${TOKEN}" \
-   -F file=@jane_resume.pdf \
-   -F metadata='{"user_id":"user_123"}'
+#### `reports`
+- `id`
+- `resume_id`
+- `score`
+- `breakdown_json`
+- `created_at`
+
+#### `exports`
+- `id`
+- `resume_id`
+- `format`
+- `storage_key`
+- `created_at`
+
+#### `tailored_variants`
+- `id`
+- `resume_id`
+- `job_target_id`
+- `variant_json`
+- `score`
+- `created_at`
+
+---
+
+## 11. Prompts and Prompt Engineering Guide
+
+### Principles
+
+- Use strict JSON schemas.
+- Separate extraction from rewriting.
+- Validate all outputs programmatically.
+- Flag uncertainty instead of guessing.
+- Version prompt files for safe iteration.
+
+### Example Prompt Strategy
+
+**System prompt:**
+
+```text
+You are an enterprise-grade ATS resume intelligence engine.
+You must extract resume facts accurately, avoid hallucination, and return valid JSON when requested.
 ```
 
-### GET /api/resumes/{id}
+**Extraction prompt:**
 
-- Description: Retrieve resume metadata and processing status.
-- Response: JSON with `status`, `score`, `structured_data` (if ready), and `exports`.
-
-### POST /api/resumes/{id}/tailor
-
-- Description: Create a tailored variant for a job description.
-- Request: `{ "job_text": "..." }` or `{ "job_id": "..." }`.
-- Response: `202 Accepted` with `job_id`.
-
-### GET /api/resumes/{id}/exports
-
-- Description: List generated export artifacts and presigned download URLs.
-
-Authentication / errors
-
-- `401 Unauthorized` if the token is missing or invalid.
-- `404 Not Found` if resume id is invalid.
-- `429 Too Many Requests` if rate limits are exceeded.
-
----
-
-## 9. Database schema overview
-
-This section describes primary tables/collections and key fields. The exact schema lives in `prisma/` and migration files.
-
-Core entities:
-
-- `users` — id, email, hashed_password, created_at, last_login.
-- `resumes` — id, user_id, original_filename, storage_key, structured_json_id, status, created_at.
-- `structured_json` — id, resume_id, json_payload, parsed_at.
-- `reports` — id, resume_id, score, breakdown_json, created_at.
-- `exports` — id, resume_id, type (pdf, docx, json), storage_key, created_at.
-
-Indexing recommendations:
-
-- Index `resumes.user_id` for fast user-specific queries.
-- Index `reports.created_at` for retention cleanup.
-
-Migration strategy:
-
-- Use Alembic (for SQLAlchemy) or `prisma migrate` to manage schema changes.
-
----
-
-## 10. Prompts and prompt engineering guide
-
-This section documents the prompt patterns used across extraction, validation, optimization, and tailoring.
-
-Principles:
-
-- Always supply a strict JSON schema in the system prompt and require `json` output.
-- Give examples for ambiguous cases.
-- Use a two-step approach: (1) ask the LLM to extract raw fields, (2) validate and normalize outputs programmatically.
-
-Example extraction prompt (simplified):
-
-```
-System: You are a resume parsing assistant. Given the raw resume text, return JSON with keys: contact, experience[], education[], skills[]. Each experience record must include {title, company, start_date, end_date, bullets[]}.
-
-User: <raw_text_here>
-
-Assistant: (must reply with valid JSON only)
+```text
+Extract the resume into structured JSON with fields for contact, summary, skills, work_experience, education, certifications, and projects. Return JSON only.
 ```
 
-Validation:
+**Optimization prompt:**
 
-- Use Pydantic models to validate and coerce types.
-- If dates are ambiguous, record the original string and a `confidence` score.
-
-Versioning prompts:
-
-- Keep prompt templates in `prompts/` with versioned filenames (e.g., `extraction_v1.md`, `extraction_v2.md`).
+```text
+Rewrite the professional summary and work bullets to be stronger, ATS-friendly, and recruiter-readable without inventing facts.
+```
 
 ---
 
-## 11. Development environment & quickstart (detailed)
+## 12. Development Environment & Quickstart
 
-The project contains both a frontend and backend. This section explains how to run both locally for development.
+### Prerequisites
 
-Prerequisites:
-
-- Node.js >= 18
+- Node.js 18+
 - Python 3.10+
-- Postgres database (local or container)
-- Optional: MinIO or S3 for storage emulation
+- PostgreSQL
+- Redis (recommended for queues)
+- optional MinIO / S3-compatible storage
 
-Backend setup:
-
-1. Create and activate a Python virtual environment.
+### Backend Setup
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-2. Install backend dependencies.
-
-```bash
 pip install -r resume_engine/requirements.txt
-```
-
-3. Configure environment variables.
-
-Create a `.env` file at `resume_engine/.env` with:
-
-```
-DATABASE_URL=postgres://user:pass@localhost:5432/resume_engine
-STORAGE_ENDPOINT=http://localhost:9000
-STORAGE_KEY=local-key
-STORAGE_SECRET=local-secret
-LLM_API_KEY=your_key_here
-JWT_SECRET=supersecret
-```
-
-4. Run migrations.
-
-```bash
+cp resume_engine/.env.example resume_engine/.env
 alembic upgrade head
-```
-
-5. Start the API.
-
-```bash
 uvicorn resume_engine.main:app --reload
 ```
 
-Frontend setup:
-
-1. Install packages.
+### Frontend Setup
 
 ```bash
 npm install
-```
-
-2. Create `.env.local`.
-
-```
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-```
-
-3. Start dev server.
-
-```bash
+cp .env.example .env.local
 npm run dev
 ```
 
-Local end-to-end flow:
+### Suggested Environment Variables
 
-1. Start Postgres and optional MinIO.
-2. Start backend and frontend.
-3. Create a user account via UI or API, upload a resume.
-
----
-
-## 12. Testing and CI
-
-Testing strategy:
-
-- Unit tests: focus on parsing heuristics, Pydantic schemas, scoring rules.
-- Integration tests: simulate file uploads, check parser output and end-to-end flows using test DB.
-- Contract tests: ensure API responses match OpenAPI schema.
-
-Recommended frameworks:
-
-- Python: pytest with factory-boys and pytest-asyncio for async endpoints.
-- Frontend: vitest or jest + React Testing Library for component tests.
-
-CI pipeline (example):
-
-1. Lint and format (pre-commit hooks).
-2. Run unit tests for backend.
-3. Run frontend tests.
-4. Build artifacts and optionally run integration smoke tests against a test deployment.
-
-Example GitHub Actions snippet (conceptual):
-
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-   backend-tests:
-      runs-on: ubuntu-latest
-      steps:
-         - uses: actions/checkout@v3
-         - uses: actions/setup-python@v4
-            with: {python-version: '3.10'}
-         - run: pip install -r resume_engine/requirements.txt
-         - run: pytest -q
+```env
+DATABASE_URL=postgres://user:pass@localhost:5432/ats_engine
+REDIS_URL=redis://localhost:6379/0
+JWT_SECRET=change-me
+LLM_API_KEY=your-provider-key
+STORAGE_ENDPOINT=http://localhost:9000
+STORAGE_BUCKET=ats-engine
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
 ---
 
-## 13. Deployment and infrastructure guidance
+## 13. Testing and CI
 
-This section outlines production deployment recommendations and architecture choices for scaling.
+### Testing Strategy
 
-Suggested architecture for production:
+- unit tests for parsing, scoring, and schema validation
+- integration tests for upload-to-report workflows
+- frontend component tests for major user flows
+- contract tests to verify API response shape
 
-- API service behind an API gateway (e.g., AWS ALB, Cloud Run proxy).
-- Workers for parsing and optimization tasks (separate horizontally scalable worker pool).
-- Managed Postgres (RDS, Cloud SQL) with read replicas for analytics.
-- Object storage with lifecycle policies (S3 + lifecycle to move to Glacier if needed).
-- Monitoring (Prometheus + Grafana) and centralized logging (ELK).
+### Recommended Tooling
 
-Scaling guidelines:
+- **Backend:** `pytest`, `pytest-asyncio`
+- **Frontend:** `vitest`, `@testing-library/react`
+- **Linting:** `ruff`, `black`, `eslint`, `prettier`
 
-- Autoscale workers based on queue length and average job time.
-- Cache frequent LLM prompt responses when deterministic.
+### CI Pipeline
 
-Cost controls:
-
-- Rate-limit LLM calls and provide user quotas.
-- Batch small operations to reduce per-call overhead.
-
----
-
-## 14. Security, privacy, and compliance considerations
-
-Data handling best practices:
-
-- Minimize retention of raw resume text; store redacted or hashed forms when possible.
-- Encrypt sensitive fields at rest and in transit.
-- Use role-based access control and least-privilege for services accessing storage.
-
-LLM-specific guidance:
-
-- Avoid sending sensitive PII to external LLMs unless permitted and necessary.
-- Use prompt redaction to remove SSNs or other identifiers before sending.
-
-Privacy & compliance:
-
-- Implement data deletion endpoints to comply with user requests (e.g., GDPR Right to Erasure).
-- Maintain an audit log for data access and deletions.
-
-Security checklist:
-
-- Rotate secrets regularly and store them in a secrets manager.
-- Monitor for abnormal export/download activity.
+1. install dependencies
+2. lint backend and frontend
+3. run tests
+4. build frontend
+5. optionally run smoke tests against a preview environment
 
 ---
 
-## 15. Operational runbook
+## 14. Deployment and Infrastructure Guidance
 
-This runbook provides steps for common operational tasks.
+### Production Recommendations
 
-15.1 Restarting workers
+- containerize frontend and backend separately
+- run worker processes independently from API pods
+- use managed PostgreSQL and object storage
+- use an API gateway / load balancer
+- centralize metrics, logs, and tracing
+
+### Scaling Tips
+
+- autoscale workers by queue depth
+- cache repeatable operations when safe
+- isolate OCR-heavy workloads
+- use provider timeouts and retry policies for LLM calls
+
+---
+
+## 15. Security, Privacy, and Compliance
+
+### Security Practices
+
+- encrypt data in transit and at rest
+- apply least-privilege access to storage and database systems
+- redact highly sensitive data before external AI calls where possible
+- use short-lived download URLs
+- rotate secrets regularly
+
+### Privacy Practices
+
+- define retention windows for uploads and generated artifacts
+- support deletion workflows for users
+- maintain audit logs for administrative access
+- avoid logging full resume text in production logs
+
+### Compliance Considerations
+
+- GDPR-style deletion support
+- data export capability
+- access traceability
+- configurable retention and purge jobs
+
+---
+
+## 16. Operational Runbook
+
+### Restart Workers
 
 ```bash
-systemctl restart resume_engine-workers
+systemctl restart ats-engine-workers
 ```
 
-15.2 Purging old resumes (example cron job)
+### Purge Stale Files
 
-Run a scheduled job that:
+- identify expired resume records
+- remove linked storage artifacts
+- anonymize or delete structured data where required
+- write audit events for purge actions
 
-- Identifies `resumes` older than retention period (e.g., 90 days).
-- Deletes associated storage objects.
-- Marks resume record as `deleted` and optionally anonymizes structured JSON.
+### Increase Throughput
 
-15.3 Scaling the optimizer
-
-- Increase worker pool size and ensure LLM provider rate limits are respected.
-
----
-
-## 16. Troubleshooting
-
-Common issues and steps:
-
-- PDF parsing yields empty text: check if file is image-only; enable OCR pipeline.
-- LLM extraction incorrect format: validate prompt template and add stronger schema constraints.
-- Slow processing: profile parsing and LLM latency; consider async batching.
-
-Logging and observability:
-
-- Ensure error logs include correlation ids and resume ids for tracing.
+- raise worker count
+- validate provider rate limits
+- split OCR and LLM workloads into separate queues
 
 ---
 
-## 17. Extending the system
+## 17. Troubleshooting
 
-Examples of extensibility:
+### Problem: PDF extracts empty text
+Possible causes:
+- scanned image-only PDF
+- parser limitations
+- corrupted file
 
-- Add a new exporter: implement `exporters/<format>.py` and register it in the exporter registry.
-- Add a new scoring rule: extend `scoring/rules.py` and update weighting configuration.
-- Replace LLM provider: implement a new adapter under `app/services/ai/providers` and update the configuration.
+**Fix:** route through OCR fallback and validate page text output.
 
-Code conventions:
+### Problem: AI output fails schema validation
+Possible causes:
+- prompt drift
+- oversized context
+- malformed provider response
 
-- Follow black/ruff/isort formatting for Python and Prettier/ESLint for JS/TS.
+**Fix:** tighten output instructions, chunk input, and retry with a validation-focused prompt.
 
----
+### Problem: Slow end-to-end processing
+Possible causes:
+- OCR-heavy documents
+- large model latency
+- synchronous export generation
 
-## 18. Contributing guidelines
-
-- Fork the repo and open a feature branch.
-- Add tests for new logic and run linters locally.
-- Open a PR describing the change, rationale, and migration steps if necessary.
-
-For large changes involving prompts or scoring, open an issue first to discuss design and impacts on existing reports.
-
----
-
-## 19. FAQs
-
-Q: Can the system parse scanned PDFs?
-
-A: Yes, but enable OCR in the parsing pipeline. OCR adds latency and potential errors; validate extracted text.
-
-Q: How are LLM costs controlled?
-
-A: Use caching, batch prompts, and user quotas. Offer an on-premise or lower-cost provider option for high-volume users.
-
-Q: Can I run the system offline?
-
-A: The frontend and core parsing tools can run offline, but LLM-based extraction requires connectivity unless an on-prem model is deployed.
+**Fix:** move expensive steps to background jobs and measure per-stage latency.
 
 ---
 
-## 20. Glossary
+## 18. Extending the System
 
-- ATS: Applicant Tracking System.
-- LLM: Large Language Model.
-- DTO: Data Transfer Object.
-- OCR: Optical Character Recognition.
+### Add a New Exporter
+
+1. create a module under `app/services/exporters/`
+2. implement a renderer interface
+3. register it in the exporter registry
+4. add tests for output shape and artifact creation
+
+### Add a New Scoring Rule
+
+1. extend scoring rules module
+2. assign a category weight
+3. update explanation strings
+4. add regression tests
+
+### Add a New AI Provider
+
+1. implement a provider adapter
+2. map provider responses to internal schema
+3. add configuration toggles
+4. validate fallback behavior
 
 ---
 
-## 21. Changelog (high level)
+## 19. Contributing Guidelines
 
-- v0.1 — Initial proof-of-concept: parsing and scoring.
-- v0.2 — LLM integration and tailored resume generation.
+1. fork the repository
+2. create a feature branch
+3. add or update tests
+4. run linters locally
+5. submit a pull request with context and screenshots when relevant
+
+### Coding Standards
+
+- keep APIs thin and explicit
+- separate source truth from generated suggestions
+- write tests for new business logic
+- avoid hidden side effects in service layers
 
 ---
 
-## 22. License
+## 20. FAQs
 
-This repository is open-source. Include an appropriate license file (e.g., MIT) at the repo root if desired.
+### Can the system parse scanned PDFs?
+Yes, with OCR enabled, though OCR adds latency and may reduce extraction accuracy.
+
+### Can I switch LLM providers later?
+Yes. The architecture should keep provider integrations behind an adapter layer.
+
+### Is this a full ATS product?
+No. This project focuses on resume intelligence, scoring, tailoring, and exporting.
+
+### Can it run without external AI providers?
+Yes for basic parsing and rules-based scoring; advanced extraction and optimization may require an external or self-hosted model.
 
 ---
 
-Appendix: Example prompt templates, JSON schemas, and sample request/response bodies are maintained in the `prompts/` and `app/schemas/` folders. Refer to those files for authoritative formats.
+## 21. Glossary
 
-End of document.
+- **ATS:** Applicant Tracking System
+- **LLM:** Large Language Model
+- **OCR:** Optical Character Recognition
+- **DTO:** Data Transfer Object
+- **Artifact:** Generated output such as a PDF, DOCX, or JSON file
+- **Tailored Variant:** A resume version optimized for a specific role or job description
 
-  Opt[Optimization Service]
-  Export[Exporters]
-  DB[(Database)]
-  Storage[(File Storage / S3)]
+---
 
-  U -->|upload resume| FE
-  FE -->|POST /resumes| API
-  API -->|save raw file| Storage
-  API -->|create record| DB
-  API -->|queue parse job| Parser
-  Parser -->|extract text| Storage
-  Parser -->|structured payload| API
-  API -->|call prompts| AI
-  AI -->|extracted entities| API
-  API -->|compute score| Score
-  Score -->|score result| API
-  API -->|request tailoring| Opt
-  Opt -->|tailored resume| API
-  API -->|generate artifacts| Export
-  Export -->|artifact files| Storage
-  API -->|return results| FE
-  FE -->|display downloads & report| U
+## 22. Changelog
 
-  DB -->|store metadata & reports| API
+### v0.1.0
+- initial proof of concept for parsing and scoring
 
-  classDef service fill:#f9f,stroke:#333,stroke-width:1px;
-  class Parser,AI,Score,Opt,Export service;
+### v0.2.0
+- added AI extraction and tailored resume generation
+
+### v0.3.0
+- added structured README, linked table of contents, and expanded architecture guidance
+
+---
+
+## 23. License
+
+Choose the license that matches your distribution model.
+
+Common options:
+- MIT
+- Apache-2.0
+- Proprietary / commercial
+
+If open source, place the license text in a top-level `LICENSE` file.
+
+---
+
+## Suggested Repository Structure
+
+```text
+.
+├── src/                         # Next.js frontend
+├── resume_engine/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── prompts/
+│   ├── tests/
+│   └── main.py
+├── prisma/                      # Optional schema definitions
+├── alembic/                     # DB migrations
+├── docker-compose.yml
+├── README.md
+└── LICENSE
 ```
 
-### DFD notes
+---
 
-- External entity: **User** interacts via the frontend.
-- Data stores: **Storage** holds raw and generated files; **Database** stores metadata, reports, and user info.
-- Key processes: parsing, AI extraction, scoring, optimization, and exporting.
+## Final Notes
 
-## Components (short)
-
-- `src/`: Frontend app and components (upload, preview, editor, history).
-- `resume_engine/app/`: Backend API, models, schemas, services, DB session.
-- `prompts/`: Prompt templates for all AI-driven operations.
-- `prisma/` and `alembic/`: DB schema and migrations.
-- `app/services/ai`: Integrations with LLM providers.
-
-## Quickstart (development)
-
-1. Backend (Python):
-
-   - Create and activate a virtual environment.
-   - Install dependencies: `pip install -r resume_engine/requirements.txt`.
-   - Configure environment variables (DB URL, LLM API keys, storage credentials).
-   - Run migrations (Alembic) and start the API (e.g., `uvicorn resume_engine.main:app --reload`).
-
-2. Frontend (Next.js):
-
-   - Install: `npm install` or `pnpm install`.
-   - Configure environment variables in `.env.local`.
-   - Start dev server: `npm run dev`.
-
-3. Using the app:
-
-   - Open the frontend in the browser, sign in, and upload a resume to see parsing, scoring, and export options.
-
-## Development notes & extension points
-
-- Swap LLM providers by updating the AI integration layer under `app/services/ai` and adjusting prompt templates in `prompts/`.
-- Add more exporters by implementing new modules under `exporters/`.
-- Add worker/queue (e.g., Celery, RQ) to handle long-running parse/optimize tasks.
-
-## Security and privacy
-
-- Avoid logging raw resume content in plaintext to production logs.
-- Ensure file storage permissions are restrictive and temporary files are purged on schedule.
-- Protect LLM API keys and other secrets via environment management.
-
-## Contact / Contributing
-
-Open issues and PRs in this repo. For major changes (new exporters, major prompt refactors), open an issue first to discuss design and compatibility.
+This README is intentionally written as both a **product overview** and a **developer handoff document**. It should help engineers, founders, product stakeholders, and future contributors understand how the ATS Engine is meant to work, where major logic belongs, and how to extend it safely.
