@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "cd resume_engine && source venv/bin/activate && DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH uvicorn main:app --reload",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -26,6 +28,7 @@
     "lucide-react": "^0.408.0"
   },
   "devDependencies": {
+    "concurrently": "^9.0.0",
     "typescript": "^5.5.3",
     "@types/react": "^18.3.3",
     "@types/node": "^20.14.10",

@@ -12,6 +12,9 @@ export class SessionManager {
     localStorage.setItem(ACCESS_TOKEN_KEY, access)
     localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
     localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTimestamp.toString())
+    // Write cookie so Next.js middleware can read auth state server-side
+    const maxAge = expiresIn
+    document.cookie = `ats_access_token=${access}; path=/; max-age=${maxAge}; SameSite=Lax`
   }
 
   static getAccessToken(): string | null {
@@ -30,6 +33,8 @@ export class SessionManager {
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(TOKEN_EXPIRY_KEY)
     localStorage.removeItem(USER_KEY)
+    // Expire the middleware cookie immediately
+    document.cookie = 'ats_access_token=; path=/; max-age=0; SameSite=Lax'
   }
 
   static isTokenExpired(): boolean {

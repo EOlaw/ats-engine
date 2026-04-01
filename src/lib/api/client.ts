@@ -41,6 +41,12 @@ export class APIClient {
         if (token && config.headers) {
           config.headers['Authorization'] = `Bearer ${token}`
         }
+        // For FormData, delete Content-Type so the browser sets multipart/form-data
+        // with the correct boundary automatically. Must happen here (after merging)
+        // because the instance default `application/json` wins over per-request `undefined`.
+        if (config.data instanceof FormData) {
+          delete config.headers['Content-Type']
+        }
         return config
       },
       (error) => Promise.reject(error)
@@ -103,6 +109,26 @@ export class APIClient {
           }
         }
 
+        // Extract a readable message from the error response.
+        // Custom app exceptions use { message, error_code } shape.
+        // FastAPI Pydantic validation errors use { detail: [...] } shape.
+        const data = error.response?.data
+        if (data) {
+          if (typeof data.message === 'string') {
+            return Promise.reject(new Error(data.message))
+          }
+          const detail = data.detail
+          if (detail) {
+            const message =
+              typeof detail === 'string'
+                ? detail
+                : Array.isArray(detail)
+                ? detail.map((e: { msg: string }) => e.msg).join(', ')
+                : 'Request failed'
+            return Promise.reject(new Error(message))
+          }
+        }
+
         return Promise.reject(error)
       }
     )
@@ -129,12 +155,7 @@ export class APIClient {
   }
 
   async postForm<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.axiosInstance.post<T>(url, formData, {
-      ...config,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const response = await this.axiosInstance.post<T>(url, formData, config)
     return response.data
   }
 }
