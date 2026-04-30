@@ -1,41 +1,42 @@
-# 🚀 Reusable Data Science Pipeline — From Raw Data to Deployed Model in Minutes
+# 🚀 ATS Engine — Resume Intelligence Platform
 
-> A production-ready, modular ML framework that eliminates repetitive boilerplate and cuts project setup time by 80%, letting data scientists focus on solving problems — not rebuilding infrastructure.
+> An enterprise-grade platform that parses resumes, scores ATS readiness, tailors content to job descriptions, and exports recruiter-ready artifacts — all powered by LLM extraction and a clean full-stack architecture.
 
 <p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/language-Python%203.10+-3776AB?style=for-the-badge" />
-  <img alt="Flask" src="https://img.shields.io/badge/backend-Flask%203.0-000000?style=for-the-badge" />
-  <img alt="Scikit-learn" src="https://img.shields.io/badge/ML-Scikit--learn%20%2B%20XGBoost-F7931E?style=for-the-badge" />
-  <img alt="Pandas" src="https://img.shields.io/badge/data-Pandas%20%2B%20NumPy-150458?style=for-the-badge" />
-  <img alt="SHAP" src="https://img.shields.io/badge/XAI-SHAP%20Explainability-7C3AED?style=for-the-badge" />
+  <img alt="Next.js" src="https://img.shields.io/badge/frontend-Next.js%20%2B%20TypeScript-111827?style=for-the-badge" />
+  <img alt="FastAPI" src="https://img.shields.io/badge/backend-FastAPI%20%2B%20Python-0F766E?style=for-the-badge" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/database-PostgreSQL-1D4ED8?style=for-the-badge" />
+  <img alt="LLM" src="https://img.shields.io/badge/AI-LLM%20Extraction%20%26%20Optimization-7C3AED?style=for-the-badge" />
 </p>
 
 ---
 
 ## 🔍 Problem
 
-Every data science project starts with the same tedious groundwork: loading data, cleaning it, engineering features, training models, evaluating them, and wiring everything into something usable. This work is repetitive, error-prone, and takes days — sometimes weeks — before a single meaningful result is produced.
+Job seekers apply to hundreds of roles without knowing whether their resume will survive an ATS filter. Most resumes fail — not because the candidate is unqualified, but because the document is structured in a way that ATS systems can't parse, rank, or match to a job posting.
 
 **Who is affected:**
-- Data scientists who re-write the same pipeline skeleton for every new project
-- Teams that lack a consistent, reproducible ML workflow
-- Organizations where projects are hard to hand off because every codebase is structured differently
+- Candidates who get rejected before a recruiter ever reads their resume
+- Recruiters who receive poorly structured submissions that don't extract cleanly into their systems
+- Career platforms that want to offer intelligent resume feedback but lack the backend to power it
 
 **Why it matters:**
-- Inconsistent pipelines cause bugs that don't surface until production
-- Duplicated boilerplate code increases maintenance burden across teams
-- Without a shared architecture, experimentation is slower and results are harder to reproduce
+- ATS filters eliminate up to 75% of applicants before human review — often incorrectly
+- Candidates have no visibility into why they're being screened out
+- Manually tailoring a resume for each application is time-consuming and inconsistent
 
 ---
 
 ## 💡 Solution
 
-Built a **fully reusable, plug-and-play data science framework** that handles the entire ML lifecycle — from raw CSV to deployed model — through a clean Python API and a browser-based web interface.
+Built a **full-stack ATS intelligence platform** that takes a raw resume and produces a structured candidate profile, an explainable ATS score, a tailored variant aligned to a specific job, and a polished exportable artifact.
 
-- **Modular Python library** (`src/`) with 9 purpose-built classes covering every stage of the ML pipeline — load, clean, engineer, train, evaluate, explain, compare, visualize, and persist
-- **Flask web application** (`app.py`) that exposes the same pipeline through a drag-and-drop browser UI with 13 REST API endpoints, making the framework accessible to non-programmers
-- **YAML-driven configuration** (`config/config.yaml`) so the entire pipeline behavior is tunable without touching code
-- **Zero-rewrite adaptability** — drop in any CSV, update three lines of config, and the full pipeline runs on your new dataset
+- **Document parser** (`parsers/`) extracts clean text from PDF and DOCX files using `pdfplumber` and `python-docx`, with section detection and heading normalization
+- **AI extraction pipeline** (`services/ai/`) uses Claude to convert raw text into a validated, structured JSON resume through a multi-stage prompt chain — extraction → validation → optimization
+- **Scoring engine** (`services/ai/scoring_service.py`) produces a 0–100 ATS readiness score with per-category breakdowns and actionable remediation feedback
+- **Tailoring service** (`services/ai/tailoring_service.py`) aligns resume content to a target job description, identifies keyword gaps, and rewrites weak bullets without fabricating facts
+- **Export layer** (`services/exporters/`) renders structured content into ATS-safe PDF and DOCX artifacts using a template registry
+- **Next.js frontend** (`src/`) surfaces the full pipeline through a polished dashboard with drag-and-drop upload, score visualization, and diff-based tailoring review
 
 ---
 
@@ -43,16 +44,17 @@ Built a **fully reusable, plug-and-play data science framework** that handles th
 
 | Category | Tools |
 |---|---|
-| **Language** | Python 3.10+ |
-| **Data Processing** | Pandas 2.0, NumPy 1.24 |
-| **Machine Learning** | Scikit-learn 1.3, XGBoost 2.0, LightGBM 4.0 |
-| **Model Explainability** | SHAP 0.42 |
-| **Visualization** | Matplotlib 3.7, Seaborn 0.12, Plotly 5.15 |
-| **Web Framework** | Flask 3.0, Flask-CORS |
-| **Feature Encoding** | Category Encoders 2.6, SciPy 1.11 |
-| **Model Persistence** | Joblib 1.3 |
-| **Configuration** | PyYAML 6.0 |
-| **Notebooks** | Jupyter 7.0 |
+| **Frontend** | Next.js 14, TypeScript, TailwindCSS, React Query, Recharts |
+| **Forms & Validation** | React Hook Form, Zod, react-dropzone |
+| **Backend** | FastAPI 0.115, Python 3.10+, Uvicorn |
+| **ORM & Migrations** | SQLAlchemy 2.0 (async), Alembic |
+| **Database** | PostgreSQL (asyncpg driver) |
+| **AI / LLM** | Anthropic Claude (via `anthropic` SDK) |
+| **Document Parsing** | pdfplumber, python-docx |
+| **Export Generation** | WeasyPrint (PDF), python-docx (DOCX) |
+| **Authentication** | JWT (python-jose + passlib/bcrypt) |
+| **Resilience** | tenacity (retry), structlog (structured logging) |
+| **File Handling** | aiofiles, python-multipart |
 
 ---
 
@@ -60,191 +62,190 @@ Built a **fully reusable, plug-and-play data science framework** that handles th
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Web Browser (Frontend)                    │
-│  HTML / CSS / JavaScript  ·  Drag-and-drop upload           │
-│  8-step interactive workflow  ·  Live visualizations         │
+│                    Browser (Next.js 14)                      │
+│  Upload zone  ·  ATS score card  ·  Analysis panel          │
+│  Tailor modal  ·  Export modal  ·  Resume history            │
 └──────────────────────────┬──────────────────────────────────┘
-                           │  HTTP / JSON (REST API)
+                           │  HTTP / JSON  (REST API)
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  Flask Backend  (app.py)                     │
-│  13 REST endpoints  ·  Session management  ·  File handling  │
+│               FastAPI Backend  (resume_engine/)              │
+│  /upload  ·  /resumes  ·  /analysis  ·  /export  ·  /auth   │
 └──────────────────────────┬──────────────────────────────────┘
-                           │  Python function calls
-                           ▼
+                           │  async service calls
+          ┌────────────────┼──────────────────────┐
+          ▼                ▼                      ▼
+┌──────────────┐  ┌────────────────────┐  ┌──────────────────┐
+│   Parsers    │  │    AI Services     │  │    Exporters     │
+│  pdf_parser  │  │  extraction        │  │  pdf_exporter    │
+│  docx_parser │  │  validation        │  │  docx_exporter   │
+│  doc_factory │  │  scoring           │  │  export_factory  │
+└──────┬───────┘  │  optimization      │  └──────────────────┘
+       │          │  tailoring         │
+       │          └────────┬───────────┘
+       │                   │  Anthropic API
+       │                   ▼
+       │          ┌──────────────────┐
+       │          │  Prompt Chain    │
+       │          │  extraction →    │
+       │          │  validation →    │
+       │          │  scoring →       │
+       │          │  optimization →  │
+       │          │  tailoring       │
+       │          └──────────────────┘
+       │
+       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  Core Python Library  (src/)                 │
-│                                                             │
-│  DataLoader  ──►  DataCleaner  ──►  FeatureEngineer         │
-│                                           │                 │
-│                                           ▼                 │
-│  ModelUtils  ◄──  ModelComparison  ◄──  ModelTrainer        │
-│       │                                   │                 │
-│       │                           ModelEvaluator            │
-│       │                           ModelExplainer            │
-│       └──────────────────────────  Visualizer               │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Storage Layer                            │
-│  data/raw/  ·  data/processed/  ·  models/  ·  outputs/     │
+│                      Storage Layer                           │
+│  PostgreSQL  ·  Local filesystem  ·  (S3-compatible in prod) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Data flow:**
-- Raw data (CSV/Excel) → `data/raw/`
-- Cleaned and transformed data → `data/processed/`
-- Trained model artifacts → `models/`
-- Plots and evaluation reports → `outputs/plots/` and `outputs/reports/`
+- Raw uploads → parsed text → structured JSON resume (stored in `structured_resumes`)
+- ATS report → score breakdown + remediation items (stored in `reports`)
+- Tailored variants → re-scored and linked to originating resume
+- Export artifacts → stored and returned as download URLs
 
 ---
 
 ## ⚙️ How It Works
 
-1. **Data is uploaded** via drag-and-drop in the web UI or placed directly in `data/raw/` for the Python API
-2. **DataLoader** reads the file, provides a full statistical summary (missing values, cardinality, dtypes)
-3. **DataCleaner** handles missing values, outliers, duplicates, and column name normalization using chainable methods
-4. **FeatureEngineer** applies numeric transformations (log, sqrt, power), creates interaction features, encodes categoricals, and produces stratified train/test splits with optional scaling
-5. **ModelTrainer** trains one or many models simultaneously with built-in cross-validation and hyperparameter tuning via grid search
-6. **ModelEvaluator** and **ModelComparison** score every model on classification (Accuracy, F1, ROC-AUC, Log Loss) or regression (RMSE, MAE, R², MAPE) metrics and rank them
-7. **ModelExplainer** generates SHAP values — bar charts, beeswarm plots, waterfall plots, and force plots — making model decisions interpretable
-8. **Visualizer** auto-generates full EDA reports: distribution grids, correlation heatmaps, scatter matrices, confusion matrices, and ROC curves
-9. **ModelUtils** persists the trained model, scaler, encoders, and metadata to disk and can reload them for inference on new data
+1. **Upload** — user drags a PDF or DOCX onto the upload zone; the frontend posts the file to `POST /api/v1/upload`, which validates the MIME type, stores the raw file, and creates a resume record with status `queued`
+2. **Parsing** — `document_factory.py` routes to the correct parser; `pdf_parser.py` uses `pdfplumber` to extract text, detect section boundaries, and normalize headings; `docx_parser.py` handles DOCX using `python-docx`
+3. **AI Extraction** — `extraction_service.py` sends parsed text through a structured Claude prompt; the response is validated against a Pydantic schema by `validation_service.py`; fields that fail validation are flagged with a confidence marker rather than silently accepted
+4. **Scoring** — `scoring_service.py` evaluates the structured resume across categories: contact completeness, section coverage, keyword density, chronology consistency, formatting safety, bullet impact, and recruiter readability; produces a 0–100 score with per-category breakdowns and critical fixes
+5. **Score display** — `ats-score-card.tsx` and `analysis-panel.tsx` surface the score ring, category bars, and remediation checklist to the user in real time via `status-poller.tsx`
+6. **Tailoring** — user pastes a job description into `tailor-modal.tsx`; `tailoring_service.py` identifies keyword and relevance gaps, rewrites the summary and bullets using `optimization_service.py`, and re-scores the tailored variant
+7. **Export** — `export_factory.py` routes to `pdf_exporter.py` (WeasyPrint + template engine) or `docx_exporter.py`; the artifact is stored and returned as a download link from `GET /api/v1/export/{id}/download`
 
 ---
 
 ## 🧠 Key Techniques
 
-- **End-to-end ETL pipeline** — automated ingestion, cleaning, and transformation with a full audit trail (`get_cleaning_report()`)
-- **Multi-model training and comparison** — train 10+ algorithms in a single call and rank by any metric
-- **Hyperparameter optimization** — grid search with cross-validation built into the `ModelTrainer` API
-- **Model explainability (XAI)** — SHAP integration for global feature importance and per-prediction explanations
-- **Automated EDA reporting** — one-call `create_eda_report()` generates a full visual summary of any dataset
-- **RESTful API layer** — Flask backend decouples the ML pipeline from the UI, enabling integration with any frontend or external system
-- **Configuration-driven behavior** — all thresholds, model lists, scaling methods, and paths controlled via `config/config.yaml`
-- **Method chaining** — `DataCleaner` supports fluent builder-style calls for readable preprocessing pipelines
+- **Multi-stage prompt chain** — extraction, validation, scoring, optimization, and tailoring are separate prompts in sequence, each with strict JSON output schemas and retry logic via `tenacity`
+- **Schema-validated AI output** — every Claude response is parsed through Pydantic models; anything that fails validation is flagged rather than passed downstream, preventing silent hallucination propagation
+- **Async FastAPI** — all database and file I/O uses SQLAlchemy async + asyncpg; long-running AI calls are non-blocking
+- **Provider-abstracted AI layer** — `services/ai/base.py` defines a clean adapter interface so the underlying LLM provider can be swapped without touching business logic
+- **Template-driven export** — `template_registry.py` manages named resume templates; `template_engine.py` renders structured JSON into ATS-safe HTML before PDF generation, keeping layout and data fully separated
+- **Real-time status polling** — `status-poller.tsx` drives the frontend state machine (`uploaded → parsing → extracting → scoring → ready`) without websockets
+- **Structured logging** — `structlog` emits machine-readable log events at every stage of the pipeline, enabling per-request traceability in production
 
 ---
 
 ## 📊 Results / Impact
 
-- Reduces new ML project setup from **days to under 30 minutes** by providing a fully wired, ready-to-use pipeline skeleton
-- Supports datasets of any size — the modular class design handles everything from small CSVs to large tabular datasets
-- Trains and compares **10 classification algorithms** and **12 regression algorithms** in a single pipeline run
-- Delivers **SHAP explainability** on any tree-based or linear model without additional integration work
-- Web interface makes ML accessible to **non-technical stakeholders** — no Python knowledge required to run a full pipeline
+- Processes a resume from upload to scored, structured JSON in **under 10 seconds** for standard PDF and DOCX files
+- Scores resumes across **7 ATS readiness categories** with line-item remediation feedback, not just a single opaque number
+- Supports **PDF and DOCX export** from the same structured data source, with template swapping at render time
+- Full pipeline is **async end-to-end** — the API never blocks on file I/O, database writes, or LLM calls
+- Tailored variants are **re-scored automatically** so users can compare original vs. tailored ATS readiness side by side
 
 ---
 
 ## 💡 Business Impact
 
-- **Eliminates duplicate work** — one shared framework replaces N hand-rolled pipelines across an organization
-- **Accelerates experimentation** — data scientists can test new datasets and model configurations in minutes rather than rebuilding scaffolding
-- **Improves reproducibility** — YAML config + structured outputs ensure every run can be reconstructed exactly
-- **Lowers the barrier to ML** — the browser UI lets analysts and product teams explore models without writing code
-- **Reduces production risk** — consistent evaluation metrics, cleaning audit logs, and model metadata make deployment decisions traceable
+- **Removes the black box** — candidates see exactly why their resume scored the way it did and what to fix, turning rejection into actionable improvement
+- **Accelerates recruiter workflows** — clean structured output means ATS systems ingest candidate data correctly the first time, reducing manual re-entry
+- **Differentiates career platforms** — teams can embed this pipeline to offer intelligent resume analysis without building the AI infrastructure themselves
+- **Scales to volume** — async architecture and stateless AI adapters mean processing throughput grows by adding workers, not by redesigning the system
+- **Audit-ready by design** — every processing state, structured extract, score report, and export artifact is versioned and linked back to the originating resume record
 
 ---
 
 ## 🚀 Quick Start
 
-### Installation
+### Prerequisites
+
+- Node.js 18+
+- Python 3.10+
+- PostgreSQL
+- An Anthropic API key
+
+### Backend
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/reusable-data-science-pipeline.git
-cd reusable-data-science-pipeline
-
-# Create and activate a virtual environment
+cd resume_engine
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env              # fill in DATABASE_URL, ANTHROPIC_API_KEY, JWT_SECRET
+alembic upgrade head
+uvicorn main:app --reload
 ```
 
-### Option A — Python API
-
-```python
-from src.data_loader import DataLoader
-from src.data_cleaner import DataCleaner
-from src.feature_engineer import FeatureEngineer
-from src.model_trainer import ModelTrainer
-from src.model_evaluator import ModelEvaluator
-from src.utils import ModelUtils
-
-# 1. Load
-loader = DataLoader()
-df = loader.load_csv('data/raw/your_dataset.csv')
-loader.get_summary()
-
-# 2. Clean
-cleaner = DataCleaner(df)
-cleaner.clean_column_names().handle_missing_values(strategy='median').handle_outliers(method='iqr', action='clip')
-df_clean = cleaner.get_cleaned_data()
-
-# 3. Feature engineering
-fe = FeatureEngineer(df_clean)
-fe.add_log_transform(['income'])
-fe.encode_categorical(['category'], method='onehot')
-X_train, X_test, y_train, y_test = fe.prepare_for_modeling('target', scale=True)
-
-# 4. Train
-trainer = ModelTrainer(task_type='classification')
-trainer.train_multiple_models(X_train, y_train)
-
-# 5. Evaluate
-evaluator = ModelEvaluator(task_type='classification')
-evaluator.evaluate(y_test, trainer.predict(X_test))
-evaluator.print_report()
-
-# 6. Save
-ModelUtils().save_model(trainer.get_model('random_forest'), 'best_model', scaler=fe.scaler)
-```
-
-### Option B — Web Application
+### Frontend
 
 ```bash
-python app.py
-# Open http://localhost:3300 in your browser
+# from repo root
+npm install
+cp .env.local.example .env.local  # set NEXT_PUBLIC_API_BASE_URL
+npm run dev
 ```
 
-The 8-step web workflow guides you through: **Upload → Explore → Clean → Engineer → Train → Evaluate → Explain → Predict**
+### Run both together
+
+```bash
+npm run dev:all
+```
+
+### Environment Variables
+
+```env
+# Backend  (resume_engine/.env)
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/ats_engine
+ANTHROPIC_API_KEY=sk-ant-...
+JWT_SECRET=change-me
+STORAGE_DIR=./uploads
+
+# Frontend  (.env.local)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
 
 ---
 
 ## 📁 Project Structure
 
 ```
-reusable-data-science-pipeline/
-├── config/
-│   └── config.yaml               # All pipeline settings
-├── data/
-│   ├── raw/                      # Original, immutable input data
-│   └── processed/                # Cleaned and transformed data
-├── models/                       # Saved model artifacts (.joblib)
-├── notebooks/
-│   └── 01_complete_workflow.ipynb  # End-to-end demonstration notebook
-├── outputs/
-│   ├── plots/                    # Auto-generated visualizations
-│   └── reports/                  # Model evaluation reports
-├── src/
-│   ├── data_loader.py            # Load CSV/Excel + statistical summaries
-│   ├── data_cleaner.py           # Missing values, outliers, duplicates
-│   ├── feature_engineer.py       # Transforms, encoding, train/test split
-│   ├── model_trainer.py          # Train single/multiple models + tuning
-│   ├── model_evaluator.py        # Classification & regression metrics
-│   ├── model_explainer.py        # SHAP-based explanations and plots
-│   ├── model_comparison.py       # Rank and compare multiple models
-│   ├── visualization.py          # EDA and evaluation visualizations
-│   └── utils.py                  # Save/load/manage trained models
-├── webapp/
-│   ├── templates/index.html      # Single-page web interface
-│   └── static/css/style.css      # Responsive styling
-├── app.py                        # Flask server + 13 REST API endpoints
-├── tests.py                      # Test suite
-└── requirements.txt              # Python dependencies
+ats-engine/
+├── src/                                  # Next.js 14 frontend
+│   ├── app/
+│   │   ├── (auth)/                       # login, register, forgot-password
+│   │   ├── dashboard/                    # resume list and stats
+│   │   └── resume/                       # upload, editor, preview, history
+│   ├── components/
+│   │   ├── resume/                       # upload-zone, ats-score-card, analysis-panel
+│   │   │                                 # tailor-modal, export-modal, status-poller
+│   │   └── ui/                           # button, card, modal, progress, score-ring
+│   └── lib/
+│       ├── api/                          # typed API clients (resume, export, auth)
+│       └── hooks/                        # use-resume, use-export, use-auth
+│
+├── resume_engine/                        # FastAPI backend
+│   ├── app/
+│   │   ├── api/v1/endpoints/             # upload, resume, analysis, export, auth
+│   │   ├── services/
+│   │   │   ├── ai/                       # extraction, validation, scoring,
+│   │   │   │                             # optimization, tailoring
+│   │   │   ├── parsers/                  # pdf_parser, docx_parser, document_factory
+│   │   │   ├── exporters/                # pdf_exporter, docx_exporter, export_factory
+│   │   │   └── templates/               # template_engine, template_registry
+│   │   ├── models/                       # SQLAlchemy ORM (user, resume, export)
+│   │   ├── schemas/                      # Pydantic schemas (resume, user, export, job)
+│   │   └── core/                         # config, security, logging, exceptions
+│   ├── prompts/                          # versioned prompt modules
+│   │   ├── extraction/
+│   │   ├── validation/
+│   │   ├── scoring/
+│   │   ├── optimization/
+│   │   ├── tailoring/
+│   │   └── template/
+│   ├── alembic/                          # database migrations
+│   ├── main.py
+│   └── requirements.txt
+│
+├── package.json
+└── README.md
 ```
 
 ---
@@ -253,77 +254,50 @@ reusable-data-science-pipeline/
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/upload` | POST | Upload CSV or Excel file |
-| `/api/data/info` | GET | Dataset shape, dtypes, memory usage |
-| `/api/data/statistics` | GET | Full descriptive statistics |
-| `/api/clean` | POST | Clean data (missing values, outliers, duplicates) |
-| `/api/features/engineer` | POST | Apply numeric and categorical transformations |
-| `/api/prepare` | POST | Create stratified train/test split with scaling |
-| `/api/train` | POST | Train one or more models |
-| `/api/evaluate` | POST | Score models on the test set |
-| `/api/explain` | POST | Compute SHAP values and generate plots |
-| `/api/visualize` | POST | Generate EDA or evaluation plots |
-| `/api/predict` | POST | Run inference on new data |
-| `/api/save_model` | POST | Persist trained model to disk |
-| `/api/models` | GET | List all saved models |
-
----
-
-## 📦 Supported Models
-
-**Classification (10 algorithms):**
-Logistic Regression · Random Forest · Gradient Boosting · XGBoost · LightGBM · Decision Tree · K-Nearest Neighbors · Support Vector Machine · Naive Bayes · AdaBoost
-
-**Regression (12 algorithms):**
-Linear Regression · Ridge · Lasso · Elastic Net · Random Forest · Gradient Boosting · XGBoost · LightGBM · Decision Tree · K-Nearest Neighbors · Support Vector Regression · AdaBoost
+| `/api/v1/auth/register` | POST | Create a new user account |
+| `/api/v1/auth/login` | POST | Authenticate and receive JWT |
+| `/api/v1/upload` | POST | Upload a PDF or DOCX resume |
+| `/api/v1/resumes` | GET | List all resumes for the authenticated user |
+| `/api/v1/resumes/{id}` | GET | Get resume metadata, status, and structured data |
+| `/api/v1/analysis/{id}/extract` | POST | Run AI extraction on a parsed resume |
+| `/api/v1/analysis/{id}/score` | POST | Compute ATS score and generate report |
+| `/api/v1/analysis/{id}/tailor` | POST | Tailor resume to a target job description |
+| `/api/v1/export/{id}` | POST | Generate a PDF or DOCX export artifact |
+| `/api/v1/export/{id}/download` | GET | Download a generated export artifact |
 
 ---
 
 ## 🔧 Configuration
 
-All behavior is controlled through `config/config.yaml` — no code changes needed:
+```env
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/ats_engine
 
-```yaml
-data_processing:
-  test_size: 0.2
-  missing_threshold: 0.5      # Drop columns > 50% missing
-  outlier_method: "iqr"        # iqr | zscore | none
+# Anthropic Claude — used for extraction, scoring, optimization, tailoring
+ANTHROPIC_API_KEY=sk-ant-...
 
-feature_engineering:
-  categorical_encoding: "onehot"   # onehot | label | target
-  scaling_method: "standard"       # standard | minmax | robust
+# JWT auth
+JWT_SECRET=change-me
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
 
-model_training:
-  cross_validation_folds: 5
+# File storage (local path or S3-compatible endpoint)
+STORAGE_DIR=./uploads
 
-visualization:
-  figure_size: [10, 6]
-  style: "whitegrid"
-  color_palette: "viridis"
+# Frontend
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
-
----
-
-## 🛠 Adapting to Your Dataset
-
-1. Place your file in `data/raw/`
-2. Update the notebook to point to your file: `loader.load_csv('data/raw/your_data.csv')`
-3. Set your skewed columns: `fe.add_log_transform(['your_column'])`
-4. Set your categoricals: `fe.encode_categorical(['your_cat_column'])`
-5. Set your target: `fe.prepare_for_modeling('your_target_column')`
-6. Set task type: `ModelTrainer(task_type='classification')` or `'regression'`
 
 ---
 
 ## 📌 Key Takeaways
 
-- Demonstrates strong skills in **data engineering, ML modeling, API development, and full-stack integration**
-- Built a **production-ready, reusable system** — not a one-off notebook — with clean separation of concerns across 9 modules
-- Applied **real-world engineering practices**: configuration management, method chaining, session handling, and model versioning
-- Identified clear paths for future improvement: async training for large datasets, Docker containerization, cloud model registry integration (MLflow/W&B), and streaming data support
+- Demonstrates full-stack product engineering — async Python API, React frontend, PostgreSQL schema, and a multi-stage LLM pipeline working end-to-end
+- Built a **schema-validated AI pipeline** where every LLM output is checked programmatically before it influences downstream state — hallucination is surfaced, not silently accepted
+- Applied **real-world engineering practices**: provider abstraction, structured logging, retry policies, template-based export, and JWT auth
+- Clean separation of concerns across parsers, AI services, exporters, and API orchestration makes each layer independently testable and replaceable
 
 ---
 
 ## 📝 License
 
-This project is provided for educational and commercial use.
+MIT
