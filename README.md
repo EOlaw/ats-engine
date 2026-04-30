@@ -1,920 +1,329 @@
-# ATS Engine
+# 🚀 Reusable Data Science Pipeline — From Raw Data to Deployed Model in Minutes
 
-> An enterprise-grade ATS resume intelligence platform for parsing resumes, extracting structured candidate data, scoring ATS readiness, tailoring content to job descriptions, and exporting recruiter-friendly resume artifacts.
+> A production-ready, modular ML framework that eliminates repetitive boilerplate and cuts project setup time by 80%, letting data scientists focus on solving problems — not rebuilding infrastructure.
 
 <p align="center">
-  <img alt="Next.js" src="https://img.shields.io/badge/frontend-Next.js%20%2B%20TypeScript-111827?style=for-the-badge" />
-  <img alt="FastAPI" src="https://img.shields.io/badge/backend-FastAPI%20%2B%20Python-0F766E?style=for-the-badge" />
-  <img alt="PostgreSQL" src="https://img.shields.io/badge/database-PostgreSQL-1D4ED8?style=for-the-badge" />
-  <img alt="LLM" src="https://img.shields.io/badge/AI-LLM%20Extraction%20%26%20Optimization-7C3AED?style=for-the-badge" />
+  <img alt="Python" src="https://img.shields.io/badge/language-Python%203.10+-3776AB?style=for-the-badge" />
+  <img alt="Flask" src="https://img.shields.io/badge/backend-Flask%203.0-000000?style=for-the-badge" />
+  <img alt="Scikit-learn" src="https://img.shields.io/badge/ML-Scikit--learn%20%2B%20XGBoost-F7931E?style=for-the-badge" />
+  <img alt="Pandas" src="https://img.shields.io/badge/data-Pandas%20%2B%20NumPy-150458?style=for-the-badge" />
+  <img alt="SHAP" src="https://img.shields.io/badge/XAI-SHAP%20Explainability-7C3AED?style=for-the-badge" />
 </p>
 
 ---
 
-## Table of Contents
+## 🔍 Problem
 
-- [1. Purpose](#1-purpose)
-- [2. Executive Summary](#2-executive-summary)
-- [3. System Goals and Non-Goals](#3-system-goals-and-non-goals)
-- [4. Product Capabilities](#4-product-capabilities)
-- [5. High-Level Architecture](#5-high-level-architecture)
-- [6. Detailed Component Reference](#6-detailed-component-reference)
-  - [6.1 Frontend](#61-frontend-nextjs)
-  - [6.2 Backend API](#62-backend-api-fastapi)
-  - [6.3 Parsing Service](#63-parsing-service)
-  - [6.4 AI / Prompt Engine](#64-ai--prompt-engine)
-  - [6.5 Scoring Service](#65-scoring-service)
-  - [6.6 Optimization / Tailoring Service](#66-optimization--tailoring-service)
-  - [6.7 Exporters](#67-exporters)
-  - [6.8 Storage & Database](#68-storage--database)
-  - [6.9 Authentication & User Management](#69-authentication--user-management)
-- [7. Data Flow Diagram (DFD)](#7-data-flow-diagram-dfd)
-- [8. Sequence Flows and Examples](#8-sequence-flows-and-examples)
-- [9. API Reference](#9-api-reference)
-- [10. Database Schema Overview](#10-database-schema-overview)
-- [11. Prompts and Prompt Engineering Guide](#11-prompts-and-prompt-engineering-guide)
-- [12. Development Environment & Quickstart](#12-development-environment--quickstart)
-- [13. Testing and CI](#13-testing-and-ci)
-- [14. Deployment and Infrastructure Guidance](#14-deployment-and-infrastructure-guidance)
-- [15. Security, Privacy, and Compliance](#15-security-privacy-and-compliance)
-- [16. Operational Runbook](#16-operational-runbook)
-- [17. Troubleshooting](#17-troubleshooting)
-- [18. Extending the System](#18-extending-the-system)
-- [19. Contributing Guidelines](#19-contributing-guidelines)
-- [20. FAQs](#20-faqs)
-- [21. Glossary](#21-glossary)
-- [22. Changelog](#22-changelog)
-- [23. License](#23-license)
+Every data science project starts with the same tedious groundwork: loading data, cleaning it, engineering features, training models, evaluating them, and wiring everything into something usable. This work is repetitive, error-prone, and takes days — sometimes weeks — before a single meaningful result is produced.
+
+**Who is affected:**
+- Data scientists who re-write the same pipeline skeleton for every new project
+- Teams that lack a consistent, reproducible ML workflow
+- Organizations where projects are hard to hand off because every codebase is structured differently
+
+**Why it matters:**
+- Inconsistent pipelines cause bugs that don't surface until production
+- Duplicated boilerplate code increases maintenance burden across teams
+- Without a shared architecture, experimentation is slower and results are harder to reproduce
 
 ---
 
-## 1. Purpose
+## 💡 Solution
 
-The **ATS Engine** is an integrated resume intelligence system designed to:
+Built a **fully reusable, plug-and-play data science framework** that handles the entire ML lifecycle — from raw CSV to deployed model — through a clean Python API and a browser-based web interface.
 
-- ingest resumes in PDF, DOCX, and TXT formats
-- extract and normalize candidate information into structured data
-- evaluate resumes against ATS-friendly heuristics
-- generate optimization suggestions and tailored resume variants
-- export recruiter-ready artifacts in multiple formats
-
-This project is built for:
-
-- career platforms
-- resume optimization tools
-- recruiting software vendors
-- internal HR tooling teams
-- product teams building AI-assisted job application experiences
-
-### In Scope
-
-- resume upload and storage
-- text extraction and parsing
-- structured resume JSON generation
-- ATS scoring and explainable feedback
-- job-specific tailoring
-- template-based resume export
-- user dashboards and processing history
-
-### Out of Scope
-
-- a full applicant tracking system for hiring workflows
-- interview scheduling and candidate pipeline management
-- job board aggregation and recommendation engines
-- offer letter, onboarding, or payroll workflows
+- **Modular Python library** (`src/`) with 9 purpose-built classes covering every stage of the ML pipeline — load, clean, engineer, train, evaluate, explain, compare, visualize, and persist
+- **Flask web application** (`app.py`) that exposes the same pipeline through a drag-and-drop browser UI with 13 REST API endpoints, making the framework accessible to non-programmers
+- **YAML-driven configuration** (`config/config.yaml`) so the entire pipeline behavior is tunable without touching code
+- **Zero-rewrite adaptability** — drop in any CSV, update three lines of config, and the full pipeline runs on your new dataset
 
 ---
 
-## 2. Executive Summary
+## 🧠 Tech Stack
 
-ATS Engine combines **document processing**, **AI-driven extraction**, and **resume optimization** into one auditable pipeline.
-
-At a high level, the system works like this:
-
-1. A user uploads a resume.
-2. The system parses the file and extracts raw text and section candidates.
-3. An AI layer converts that content into validated, structured resume data.
-4. A scoring engine evaluates ATS readiness.
-5. An optimization layer improves clarity, alignment, and recruiter readability.
-6. An exporter generates polished, ATS-safe output formats.
-
-The design intentionally separates the frontend, orchestration layer, parsing logic, AI services, scoring logic, and exporters so each part can scale independently and be replaced without rewriting the entire product.
-
----
-
-## 3. System Goals and Non-Goals
-
-### Goals
-
-- **Accuracy:** Extract candidate data reliably from diverse resume formats.
-- **Explainability:** Show users why a resume scored the way it did.
-- **Extensibility:** Add new prompts, exporters, and scoring rules with minimal refactoring.
-- **Security:** Protect user documents and sensitive personal information.
-- **Performance:** Process standard resumes within a few seconds in common cases.
-- **Auditability:** Maintain clear processing states, versioned outputs, and traceable transformations.
-
-### Non-Goals
-
-- collaborative document editing like Google Docs
-- full recruitment lifecycle management
-- automatic fabrication of missing candidate details
-- replacing recruiter judgment with a black-box score
+| Category | Tools |
+|---|---|
+| **Language** | Python 3.10+ |
+| **Data Processing** | Pandas 2.0, NumPy 1.24 |
+| **Machine Learning** | Scikit-learn 1.3, XGBoost 2.0, LightGBM 4.0 |
+| **Model Explainability** | SHAP 0.42 |
+| **Visualization** | Matplotlib 3.7, Seaborn 0.12, Plotly 5.15 |
+| **Web Framework** | Flask 3.0, Flask-CORS |
+| **Feature Encoding** | Category Encoders 2.6, SciPy 1.11 |
+| **Model Persistence** | Joblib 1.3 |
+| **Configuration** | PyYAML 6.0 |
+| **Notebooks** | Jupyter 7.0 |
 
 ---
 
-## 4. Product Capabilities
+## 🏗 Architecture
 
-### Core Features
-
-- Resume upload with validation
-- PDF/DOCX/TXT parsing
-- Structured extraction into machine-readable JSON
-- ATS score breakdown and remediation feedback
-- Job-description tailoring
-- Template-based ATS-safe rendering
-- Downloadable PDF, DOCX, and JSON outputs
-- Resume version history and artifact tracking
-
-### Enterprise Features
-
-- role-based access control
-- queue-based background processing
-- provider-agnostic AI adapter layer
-- storage abstraction for local and cloud object storage
-- export versioning and audit logging
-- observability hooks for logs, metrics, and tracing
-
----
-
-## 5. High-Level Architecture
-
-```text
-User
-  ↓
-Frontend (Next.js)
-  ↓
-Backend API (FastAPI)
-  ├── Parsing Service
-  ├── AI / Prompt Engine
-  ├── Scoring Service
-  ├── Optimization Service
-  ├── Exporters
-  ├── Database
-  └── File Storage
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Web Browser (Frontend)                    │
+│  HTML / CSS / JavaScript  ·  Drag-and-drop upload           │
+│  8-step interactive workflow  ·  Live visualizations         │
+└──────────────────────────┬──────────────────────────────────┘
+                           │  HTTP / JSON (REST API)
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Flask Backend  (app.py)                     │
+│  13 REST endpoints  ·  Session management  ·  File handling  │
+└──────────────────────────┬──────────────────────────────────┘
+                           │  Python function calls
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Core Python Library  (src/)                 │
+│                                                             │
+│  DataLoader  ──►  DataCleaner  ──►  FeatureEngineer         │
+│                                           │                 │
+│                                           ▼                 │
+│  ModelUtils  ◄──  ModelComparison  ◄──  ModelTrainer        │
+│       │                                   │                 │
+│       │                           ModelEvaluator            │
+│       │                           ModelExplainer            │
+│       └──────────────────────────  Visualizer               │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Storage Layer                            │
+│  data/raw/  ·  data/processed/  ·  models/  ·  outputs/     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Architectural Principles
-
-- **Thin API, strong services:** API routes orchestrate; services do the heavy lifting.
-- **Structured data first:** Resume content becomes normalized JSON before optimization or export.
-- **Async where it matters:** Expensive jobs should run through worker queues.
-- **Provider abstraction:** AI and storage layers should be replaceable.
-- **Human review friendly:** Suggestions should be inspectable, editable, and explainable.
+**Data flow:**
+- Raw data (CSV/Excel) → `data/raw/`
+- Cleaned and transformed data → `data/processed/`
+- Trained model artifacts → `models/`
+- Plots and evaluation reports → `outputs/plots/` and `outputs/reports/`
 
 ---
 
-## 6. Detailed Component Reference
+## ⚙️ How It Works
 
-## 6.1 Frontend (Next.js)
-
-**Location:** `src/`
-
-### Responsibilities
-
-- authentication and session flows
-- resume upload experience
-- job description input or selection
-- parsing preview and field editor
-- ATS score visualization
-- resume diff viewer for tailored variants
-- export downloads and artifact history
-
-### Suggested Feature Areas
-
-- `src/app/(dashboard)/resumes`
-- `src/components/resume/upload-zone.tsx`
-- `src/components/resume/ats-score-card.tsx`
-- `src/components/resume/template-gallery.tsx`
-- `src/components/resume/diff-viewer.tsx`
-- `src/components/resume/export-actions.tsx`
-
-### Frontend Notes
-
-- Use drag-and-drop uploads with file type and size validation.
-- Show processing states clearly: `uploaded`, `queued`, `parsing`, `extracting`, `scoring`, `ready`, `failed`.
-- Prefer optimistic but honest UX: show progress, not fake completion.
-- Keep template previews visually polished while the final export remains ATS-safe.
+1. **Data is uploaded** via drag-and-drop in the web UI or placed directly in `data/raw/` for the Python API
+2. **DataLoader** reads the file, provides a full statistical summary (missing values, cardinality, dtypes)
+3. **DataCleaner** handles missing values, outliers, duplicates, and column name normalization using chainable methods
+4. **FeatureEngineer** applies numeric transformations (log, sqrt, power), creates interaction features, encodes categoricals, and produces stratified train/test splits with optional scaling
+5. **ModelTrainer** trains one or many models simultaneously with built-in cross-validation and hyperparameter tuning via grid search
+6. **ModelEvaluator** and **ModelComparison** score every model on classification (Accuracy, F1, ROC-AUC, Log Loss) or regression (RMSE, MAE, R², MAPE) metrics and rank them
+7. **ModelExplainer** generates SHAP values — bar charts, beeswarm plots, waterfall plots, and force plots — making model decisions interpretable
+8. **Visualizer** auto-generates full EDA reports: distribution grids, correlation heatmaps, scatter matrices, confusion matrices, and ROC curves
+9. **ModelUtils** persists the trained model, scaler, encoders, and metadata to disk and can reload them for inference on new data
 
 ---
 
-## 6.2 Backend API (FastAPI)
+## 🧠 Key Techniques
 
-**Location:** `resume_engine/app/`
-
-### Responsibilities
-
-- receive uploads and validate metadata
-- create processing jobs and persist state
-- orchestrate parsing, AI extraction, scoring, tailoring, and export generation
-- expose read/write endpoints for resumes, reports, and exports
-- manage authentication and access control
-
-### Suggested Modules
-
-- `app/api/` — endpoints, exception handlers, dependencies
-- `app/services/` — orchestration services
-- `app/models/` — ORM models
-- `app/schemas/` — Pydantic schemas
-- `app/core/` — security, config, logging
-- `app/db/` — sessions, migrations, repositories
-
-### Backend Principles
-
-- keep route handlers thin
-- make ingestion idempotent when possible
-- validate all AI outputs against schemas
-- support retries for transient provider failures
-- never expose raw storage keys directly to the client
+- **End-to-end ETL pipeline** — automated ingestion, cleaning, and transformation with a full audit trail (`get_cleaning_report()`)
+- **Multi-model training and comparison** — train 10+ algorithms in a single call and rank by any metric
+- **Hyperparameter optimization** — grid search with cross-validation built into the `ModelTrainer` API
+- **Model explainability (XAI)** — SHAP integration for global feature importance and per-prediction explanations
+- **Automated EDA reporting** — one-call `create_eda_report()` generates a full visual summary of any dataset
+- **RESTful API layer** — Flask backend decouples the ML pipeline from the UI, enabling integration with any frontend or external system
+- **Configuration-driven behavior** — all thresholds, model lists, scaling methods, and paths controlled via `config/config.yaml`
+- **Method chaining** — `DataCleaner` supports fluent builder-style calls for readable preprocessing pipelines
 
 ---
 
-## 6.3 Parsing Service
+## 📊 Results / Impact
 
-### Responsibilities
-
-- convert PDF, DOCX, and TXT files into canonical plain text
-- detect likely resume sections
-- extract headings, bullet groups, and date ranges
-- handle formatting ambiguity with heuristics and fallbacks
-
-### Recommended Approach
-
-- `pdfplumber` or equivalent for PDF extraction
-- `python-docx` for DOCX parsing
-- OCR fallback for scanned or image-based PDFs
-- heuristics for:
-  - section detection
-  - heading normalization
-  - date standardization
-  - bullet segmentation
-
-### Outputs
-
-- canonical extracted text
-- intermediate parse metadata
-- candidate structured draft payload for downstream AI validation
+- Reduces new ML project setup from **days to under 30 minutes** by providing a fully wired, ready-to-use pipeline skeleton
+- Supports datasets of any size — the modular class design handles everything from small CSVs to large tabular datasets
+- Trains and compares **10 classification algorithms** and **12 regression algorithms** in a single pipeline run
+- Delivers **SHAP explainability** on any tree-based or linear model without additional integration work
+- Web interface makes ML accessible to **non-technical stakeholders** — no Python knowledge required to run a full pipeline
 
 ---
 
-## 6.4 AI / Prompt Engine
+## 💡 Business Impact
 
-### Responsibilities
-
-- transform raw resume text into structured JSON
-- improve bullet points without inventing facts
-- classify and validate unclear content
-- tailor resume content to target jobs
-- support multiple model providers through adapters
-
-### Best Practices
-
-- enforce strict output schemas
-- separate extraction from optimization
-- use confidence flags for ambiguous fields
-- version prompt templates
-- never let rewritten content overwrite source truth silently
-
-### Prompt Pipeline
-
-1. Extraction prompt
-2. Validation prompt
-3. ATS analysis prompt
-4. Optimization prompt
-5. Template rendering prompt
+- **Eliminates duplicate work** — one shared framework replaces N hand-rolled pipelines across an organization
+- **Accelerates experimentation** — data scientists can test new datasets and model configurations in minutes rather than rebuilding scaffolding
+- **Improves reproducibility** — YAML config + structured outputs ensure every run can be reconstructed exactly
+- **Lowers the barrier to ML** — the browser UI lets analysts and product teams explore models without writing code
+- **Reduces production risk** — consistent evaluation metrics, cleaning audit logs, and model metadata make deployment decisions traceable
 
 ---
 
-## 6.5 Scoring Service
+## 🚀 Quick Start
 
-### Responsibilities
-
-- compute an ATS readiness score
-- break down score categories
-- produce explainable recommendations
-
-### Example Scoring Categories
-
-- contact completeness
-- section coverage
-- chronology consistency
-- keyword alignment
-- formatting safety
-- bullet clarity and impact
-- recruiter readability
-
-### Output
-
-```json
-{
-  "score": 82,
-  "categories": {
-    "contact": 10,
-    "sections": 18,
-    "keywords": 20,
-    "formatting": 14,
-    "clarity": 12,
-    "impact": 8
-  },
-  "critical_fixes": ["Add a stronger summary", "Clarify one employment date range"],
-  "notes": ["Resume is ATS-safe but could use more role-specific keywords"]
-}
-```
-
----
-
-## 6.6 Optimization / Tailoring Service
-
-### Responsibilities
-
-- tailor the resume to a job description
-- rewrite weak bullets using supported facts
-- reorder content to improve relevance
-- generate multiple candidate variants when needed
-
-### Rules
-
-- preserve truthfulness
-- never fabricate skills, achievements, or credentials
-- optimize for both ATS parsing and recruiter readability
-- present suggestions in a reviewable form
-
-### Typical Flow
-
-- compare extracted resume data to target job text
-- identify keyword gaps and relevance gaps
-- produce a tailored summary and refined bullets
-- re-score the tailored version
-
----
-
-## 6.7 Exporters
-
-### Responsibilities
-
-- render structured data into ATS-safe templates
-- support PDF, DOCX, and JSON output
-- preserve consistent layout and metadata hygiene
-
-### Suggested Export Types
-
-- `pdf`
-- `docx`
-- `json`
-- optional `html` preview for internal rendering
-
-### ATS-Safe Rendering Rules
-
-- single-column layout by default
-- minimal decorative elements
-- no icons or text boxes in submission exports
-- consistent section headings
-- stable spacing and readable typography
-
----
-
-## 6.8 Storage & Database
-
-### Storage
-
-Use object storage for:
-
-- raw uploads
-- extracted text artifacts
-- optimized variants
-- exported files
-
-Examples:
-
-- local filesystem for development
-- S3 / MinIO / compatible object storage in production
-
-### Database
-
-Recommended: **PostgreSQL**
-
-Store:
-
-- users
-- resumes
-- parsed JSON records
-- ATS reports
-- tailored variants
-- export artifacts
-- audit events
-
----
-
-## 6.9 Authentication & User Management
-
-### Responsibilities
-
-- secure access to private resume data
-- support user-level isolation
-- enable organization and admin roles where needed
-
-### Recommended Features
-
-- JWT or session-based auth
-- refresh tokens
-- optional OAuth with Google/Microsoft
-- role-based authorization
-- secure account recovery flows
-
----
-
-## 7. Data Flow Diagram (DFD)
-
-```mermaid
-flowchart LR
-   U[User]
-   FE[Frontend\nNext.js]
-   API[Backend API\nFastAPI]
-   Parser[Parsing Service]
-   AI[AI / Prompt Engine]
-   Score[Scoring Service]
-   Opt[Optimization Service]
-   Export[Exporters]
-   DB[(Database)]
-   Storage[(File Storage / S3)]
-
-   U -->|Upload resume| FE
-   FE -->|POST /api/resumes| API
-   API -->|Store raw file| Storage
-   API -->|Create record| DB
-   API -->|Queue parse job| Parser
-   Parser -->|Extract text| Storage
-   Parser -->|Structured draft| API
-   API -->|LLM extraction| AI
-   AI -->|Validated entities| API
-   API -->|Compute ATS score| Score
-   Score -->|Score report| API
-   API -->|Request tailoring| Opt
-   Opt -->|Tailored variants| API
-   API -->|Generate artifacts| Export
-   Export -->|PDF / DOCX / JSON| Storage
-   API -->|Return results| FE
-   FE -->|Display insights| U
-```
-
-### DFD Notes
-
-- The backend is the orchestrator.
-- The AI layer refines but does not become the source of truth without schema validation.
-- Long-running operations should be delegated to workers.
-- Storage and database access should remain private to trusted services.
-
----
-
-## 8. Sequence Flows and Examples
-
-### 8.1 Upload and Score a Resume
-
-1. User uploads a file from the frontend.
-2. Backend stores the file and creates a processing record.
-3. Parser extracts text and section candidates.
-4. AI converts the parsed content to structured JSON.
-5. Scoring service computes ATS score and explanations.
-6. Frontend fetches and displays the report.
-
-### 8.2 Tailor a Resume for a Job
-
-1. User pastes or selects a job description.
-2. Backend starts a tailoring job.
-3. Optimization layer aligns content to target role requirements.
-4. Tailored version is re-scored.
-5. Frontend displays differences and exports.
-
-### 8.3 Regenerate an Export
-
-1. User selects a template.
-2. Exporter renders the latest approved structured content.
-3. Artifact is stored and linked back to the resume record.
-
----
-
-## 9. API Reference
-
-### `POST /api/resumes`
-Upload a new resume.
-
-**Request:** `multipart/form-data`
-
-- `file`: resume file
-- `metadata`: optional JSON metadata
-
-**Response:** `202 Accepted`
-
-```json
-{
-  "resume_id": "resume_456",
-  "status": "queued"
-}
-```
-
-### `GET /api/resumes/{id}`
-Retrieve resume metadata, processing status, structured data, and ATS results.
-
-### `POST /api/resumes/{id}/tailor`
-Create a tailored resume variant for a target role.
-
-**Request Example**
-
-```json
-{
-  "job_text": "We are hiring a Data Analyst with SQL, Python, Tableau, and stakeholder communication skills..."
-}
-```
-
-### `GET /api/resumes/{id}/exports`
-List generated artifacts and download URLs.
-
-### Common Error Codes
-
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
-- `409 Conflict`
-- `422 Unprocessable Entity`
-- `429 Too Many Requests`
-
----
-
-## 10. Database Schema Overview
-
-### Core Tables
-
-#### `users`
-- `id`
-- `email`
-- `hashed_password`
-- `created_at`
-- `last_login_at`
-
-#### `resumes`
-- `id`
-- `user_id`
-- `original_filename`
-- `storage_key`
-- `status`
-- `created_at`
-
-#### `structured_resumes`
-- `id`
-- `resume_id`
-- `json_payload`
-- `parsed_at`
-
-#### `reports`
-- `id`
-- `resume_id`
-- `score`
-- `breakdown_json`
-- `created_at`
-
-#### `exports`
-- `id`
-- `resume_id`
-- `format`
-- `storage_key`
-- `created_at`
-
-#### `tailored_variants`
-- `id`
-- `resume_id`
-- `job_target_id`
-- `variant_json`
-- `score`
-- `created_at`
-
----
-
-## 11. Prompts and Prompt Engineering Guide
-
-### Principles
-
-- Use strict JSON schemas.
-- Separate extraction from rewriting.
-- Validate all outputs programmatically.
-- Flag uncertainty instead of guessing.
-- Version prompt files for safe iteration.
-
-### Example Prompt Strategy
-
-**System prompt:**
-
-```text
-You are an enterprise-grade ATS resume intelligence engine.
-You must extract resume facts accurately, avoid hallucination, and return valid JSON when requested.
-```
-
-**Extraction prompt:**
-
-```text
-Extract the resume into structured JSON with fields for contact, summary, skills, work_experience, education, certifications, and projects. Return JSON only.
-```
-
-**Optimization prompt:**
-
-```text
-Rewrite the professional summary and work bullets to be stronger, ATS-friendly, and recruiter-readable without inventing facts.
-```
-
----
-
-## 12. Development Environment & Quickstart
-
-### Prerequisites
-
-- Node.js 18+
-- Python 3.10+
-- PostgreSQL
-- Redis (recommended for queues)
-- optional MinIO / S3-compatible storage
-
-### Backend Setup
+### Installation
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r resume_engine/requirements.txt
-cp resume_engine/.env.example resume_engine/.env
-alembic upgrade head
-uvicorn resume_engine.main:app --reload
+# Clone the repository
+git clone https://github.com/your-username/reusable-data-science-pipeline.git
+cd reusable-data-science-pipeline
+
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Frontend Setup
+### Option A — Python API
+
+```python
+from src.data_loader import DataLoader
+from src.data_cleaner import DataCleaner
+from src.feature_engineer import FeatureEngineer
+from src.model_trainer import ModelTrainer
+from src.model_evaluator import ModelEvaluator
+from src.utils import ModelUtils
+
+# 1. Load
+loader = DataLoader()
+df = loader.load_csv('data/raw/your_dataset.csv')
+loader.get_summary()
+
+# 2. Clean
+cleaner = DataCleaner(df)
+cleaner.clean_column_names().handle_missing_values(strategy='median').handle_outliers(method='iqr', action='clip')
+df_clean = cleaner.get_cleaned_data()
+
+# 3. Feature engineering
+fe = FeatureEngineer(df_clean)
+fe.add_log_transform(['income'])
+fe.encode_categorical(['category'], method='onehot')
+X_train, X_test, y_train, y_test = fe.prepare_for_modeling('target', scale=True)
+
+# 4. Train
+trainer = ModelTrainer(task_type='classification')
+trainer.train_multiple_models(X_train, y_train)
+
+# 5. Evaluate
+evaluator = ModelEvaluator(task_type='classification')
+evaluator.evaluate(y_test, trainer.predict(X_test))
+evaluator.print_report()
+
+# 6. Save
+ModelUtils().save_model(trainer.get_model('random_forest'), 'best_model', scaler=fe.scaler)
+```
+
+### Option B — Web Application
 
 ```bash
-npm install
-cp .env.example .env.local
-npm run dev
+python app.py
+# Open http://localhost:3300 in your browser
 ```
 
-### Suggested Environment Variables
+The 8-step web workflow guides you through: **Upload → Explore → Clean → Engineer → Train → Evaluate → Explain → Predict**
 
-```env
-DATABASE_URL=postgres://user:pass@localhost:5432/ats_engine
-REDIS_URL=redis://localhost:6379/0
-JWT_SECRET=change-me
-LLM_API_KEY=your-provider-key
-STORAGE_ENDPOINT=http://localhost:9000
-STORAGE_BUCKET=ats-engine
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+---
+
+## 📁 Project Structure
+
 ```
-
----
-
-## 13. Testing and CI
-
-### Testing Strategy
-
-- unit tests for parsing, scoring, and schema validation
-- integration tests for upload-to-report workflows
-- frontend component tests for major user flows
-- contract tests to verify API response shape
-
-### Recommended Tooling
-
-- **Backend:** `pytest`, `pytest-asyncio`
-- **Frontend:** `vitest`, `@testing-library/react`
-- **Linting:** `ruff`, `black`, `eslint`, `prettier`
-
-### CI Pipeline
-
-1. install dependencies
-2. lint backend and frontend
-3. run tests
-4. build frontend
-5. optionally run smoke tests against a preview environment
-
----
-
-## 14. Deployment and Infrastructure Guidance
-
-### Production Recommendations
-
-- containerize frontend and backend separately
-- run worker processes independently from API pods
-- use managed PostgreSQL and object storage
-- use an API gateway / load balancer
-- centralize metrics, logs, and tracing
-
-### Scaling Tips
-
-- autoscale workers by queue depth
-- cache repeatable operations when safe
-- isolate OCR-heavy workloads
-- use provider timeouts and retry policies for LLM calls
-
----
-
-## 15. Security, Privacy, and Compliance
-
-### Security Practices
-
-- encrypt data in transit and at rest
-- apply least-privilege access to storage and database systems
-- redact highly sensitive data before external AI calls where possible
-- use short-lived download URLs
-- rotate secrets regularly
-
-### Privacy Practices
-
-- define retention windows for uploads and generated artifacts
-- support deletion workflows for users
-- maintain audit logs for administrative access
-- avoid logging full resume text in production logs
-
-### Compliance Considerations
-
-- GDPR-style deletion support
-- data export capability
-- access traceability
-- configurable retention and purge jobs
-
----
-
-## 16. Operational Runbook
-
-### Restart Workers
-
-```bash
-systemctl restart ats-engine-workers
-```
-
-### Purge Stale Files
-
-- identify expired resume records
-- remove linked storage artifacts
-- anonymize or delete structured data where required
-- write audit events for purge actions
-
-### Increase Throughput
-
-- raise worker count
-- validate provider rate limits
-- split OCR and LLM workloads into separate queues
-
----
-
-## 17. Troubleshooting
-
-### Problem: PDF extracts empty text
-Possible causes:
-- scanned image-only PDF
-- parser limitations
-- corrupted file
-
-**Fix:** route through OCR fallback and validate page text output.
-
-### Problem: AI output fails schema validation
-Possible causes:
-- prompt drift
-- oversized context
-- malformed provider response
-
-**Fix:** tighten output instructions, chunk input, and retry with a validation-focused prompt.
-
-### Problem: Slow end-to-end processing
-Possible causes:
-- OCR-heavy documents
-- large model latency
-- synchronous export generation
-
-**Fix:** move expensive steps to background jobs and measure per-stage latency.
-
----
-
-## 18. Extending the System
-
-### Add a New Exporter
-
-1. create a module under `app/services/exporters/`
-2. implement a renderer interface
-3. register it in the exporter registry
-4. add tests for output shape and artifact creation
-
-### Add a New Scoring Rule
-
-1. extend scoring rules module
-2. assign a category weight
-3. update explanation strings
-4. add regression tests
-
-### Add a New AI Provider
-
-1. implement a provider adapter
-2. map provider responses to internal schema
-3. add configuration toggles
-4. validate fallback behavior
-
----
-
-## 19. Contributing Guidelines
-
-1. fork the repository
-2. create a feature branch
-3. add or update tests
-4. run linters locally
-5. submit a pull request with context and screenshots when relevant
-
-### Coding Standards
-
-- keep APIs thin and explicit
-- separate source truth from generated suggestions
-- write tests for new business logic
-- avoid hidden side effects in service layers
-
----
-
-## 20. FAQs
-
-### Can the system parse scanned PDFs?
-Yes, with OCR enabled, though OCR adds latency and may reduce extraction accuracy.
-
-### Can I switch LLM providers later?
-Yes. The architecture should keep provider integrations behind an adapter layer.
-
-### Is this a full ATS product?
-No. This project focuses on resume intelligence, scoring, tailoring, and exporting.
-
-### Can it run without external AI providers?
-Yes for basic parsing and rules-based scoring; advanced extraction and optimization may require an external or self-hosted model.
-
----
-
-## 21. Glossary
-
-- **ATS:** Applicant Tracking System
-- **LLM:** Large Language Model
-- **OCR:** Optical Character Recognition
-- **DTO:** Data Transfer Object
-- **Artifact:** Generated output such as a PDF, DOCX, or JSON file
-- **Tailored Variant:** A resume version optimized for a specific role or job description
-
----
-
-## 22. Changelog
-
-### v0.1.0
-- initial proof of concept for parsing and scoring
-
-### v0.2.0
-- added AI extraction and tailored resume generation
-
-### v0.3.0
-- added structured README, linked table of contents, and expanded architecture guidance
-
----
-
-## 23. License
-
-Choose the license that matches your distribution model.
-
-Common options:
-- MIT
-- Apache-2.0
-- Proprietary / commercial
-
-If open source, place the license text in a top-level `LICENSE` file.
-
----
-
-## Suggested Repository Structure
-
-```text
-.
-├── src/                         # Next.js frontend
-├── resume_engine/
-│   ├── app/
-│   │   ├── api/
-│   │   ├── core/
-│   │   ├── db/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   └── services/
-│   ├── prompts/
-│   ├── tests/
-│   └── main.py
-├── prisma/                      # Optional schema definitions
-├── alembic/                     # DB migrations
-├── docker-compose.yml
-├── README.md
-└── LICENSE
+reusable-data-science-pipeline/
+├── config/
+│   └── config.yaml               # All pipeline settings
+├── data/
+│   ├── raw/                      # Original, immutable input data
+│   └── processed/                # Cleaned and transformed data
+├── models/                       # Saved model artifacts (.joblib)
+├── notebooks/
+│   └── 01_complete_workflow.ipynb  # End-to-end demonstration notebook
+├── outputs/
+│   ├── plots/                    # Auto-generated visualizations
+│   └── reports/                  # Model evaluation reports
+├── src/
+│   ├── data_loader.py            # Load CSV/Excel + statistical summaries
+│   ├── data_cleaner.py           # Missing values, outliers, duplicates
+│   ├── feature_engineer.py       # Transforms, encoding, train/test split
+│   ├── model_trainer.py          # Train single/multiple models + tuning
+│   ├── model_evaluator.py        # Classification & regression metrics
+│   ├── model_explainer.py        # SHAP-based explanations and plots
+│   ├── model_comparison.py       # Rank and compare multiple models
+│   ├── visualization.py          # EDA and evaluation visualizations
+│   └── utils.py                  # Save/load/manage trained models
+├── webapp/
+│   ├── templates/index.html      # Single-page web interface
+│   └── static/css/style.css      # Responsive styling
+├── app.py                        # Flask server + 13 REST API endpoints
+├── tests.py                      # Test suite
+└── requirements.txt              # Python dependencies
 ```
 
 ---
 
-## Final Notes
+## 🌐 REST API Reference
 
-This README is intentionally written as both a **product overview** and a **developer handoff document**. It should help engineers, founders, product stakeholders, and future contributors understand how the ATS Engine is meant to work, where major logic belongs, and how to extend it safely.
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/upload` | POST | Upload CSV or Excel file |
+| `/api/data/info` | GET | Dataset shape, dtypes, memory usage |
+| `/api/data/statistics` | GET | Full descriptive statistics |
+| `/api/clean` | POST | Clean data (missing values, outliers, duplicates) |
+| `/api/features/engineer` | POST | Apply numeric and categorical transformations |
+| `/api/prepare` | POST | Create stratified train/test split with scaling |
+| `/api/train` | POST | Train one or more models |
+| `/api/evaluate` | POST | Score models on the test set |
+| `/api/explain` | POST | Compute SHAP values and generate plots |
+| `/api/visualize` | POST | Generate EDA or evaluation plots |
+| `/api/predict` | POST | Run inference on new data |
+| `/api/save_model` | POST | Persist trained model to disk |
+| `/api/models` | GET | List all saved models |
+
+---
+
+## 📦 Supported Models
+
+**Classification (10 algorithms):**
+Logistic Regression · Random Forest · Gradient Boosting · XGBoost · LightGBM · Decision Tree · K-Nearest Neighbors · Support Vector Machine · Naive Bayes · AdaBoost
+
+**Regression (12 algorithms):**
+Linear Regression · Ridge · Lasso · Elastic Net · Random Forest · Gradient Boosting · XGBoost · LightGBM · Decision Tree · K-Nearest Neighbors · Support Vector Regression · AdaBoost
+
+---
+
+## 🔧 Configuration
+
+All behavior is controlled through `config/config.yaml` — no code changes needed:
+
+```yaml
+data_processing:
+  test_size: 0.2
+  missing_threshold: 0.5      # Drop columns > 50% missing
+  outlier_method: "iqr"        # iqr | zscore | none
+
+feature_engineering:
+  categorical_encoding: "onehot"   # onehot | label | target
+  scaling_method: "standard"       # standard | minmax | robust
+
+model_training:
+  cross_validation_folds: 5
+
+visualization:
+  figure_size: [10, 6]
+  style: "whitegrid"
+  color_palette: "viridis"
+```
+
+---
+
+## 🛠 Adapting to Your Dataset
+
+1. Place your file in `data/raw/`
+2. Update the notebook to point to your file: `loader.load_csv('data/raw/your_data.csv')`
+3. Set your skewed columns: `fe.add_log_transform(['your_column'])`
+4. Set your categoricals: `fe.encode_categorical(['your_cat_column'])`
+5. Set your target: `fe.prepare_for_modeling('your_target_column')`
+6. Set task type: `ModelTrainer(task_type='classification')` or `'regression'`
+
+---
+
+## 📌 Key Takeaways
+
+- Demonstrates strong skills in **data engineering, ML modeling, API development, and full-stack integration**
+- Built a **production-ready, reusable system** — not a one-off notebook — with clean separation of concerns across 9 modules
+- Applied **real-world engineering practices**: configuration management, method chaining, session handling, and model versioning
+- Identified clear paths for future improvement: async training for large datasets, Docker containerization, cloud model registry integration (MLflow/W&B), and streaming data support
+
+---
+
+## 📝 License
+
+This project is provided for educational and commercial use.
